@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Employment_history>
+	<Employee>
+		<Login>
+			<User>user1</User>
+			<Pass>pass1</Pass>
+			<SNILS>111-111-111 11</SNILS>
+		</Login>
+		<Number>1</Number>
+		<Date>
+			<day>14</day>
+			<month>11</month>
+			<year>20</year>
+		</Date>
+		<Entries>Принят на работу</Entries>
+		<Document>Приказ от 11.11.20 № 3k</Document>
+	</Employee>
+	<Employee>
+		<Login>
+			<User>user2</User>
+			<Pass>pass2</Pass>
+			<SNILS>111-111-111 12</SNILS>
+		</Login>
+		<Number>1</Number>
+		<Date>
+			<day>22</day>
+			<month>02</month>
+			<year>22</year>
+		</Date>
+		<Entries>Уволен</Entries>
+		<Document>Приказ от 02.11.22 № 3k</Document>
+	</Employee>
+	<Employee>
+		<Login>
+			<User>user1</User>
+			<Pass>pass1</Pass>
+			<SNILS>111-111-111 11</SNILS>
+		</Login>
+		<Number>2</Number>
+		<Date>
+			<day>01</day>
+			<month>01</month>
+			<year>01</year>
+		</Date>
+		<Entries>Уволен</Entries>
+		<Document>Приказ от 01.11.22 № 3k</Document>
+	</Employee>
+	<Employee>
+		<Login>
+			<User>user3</User>
+			<Pass>pass3</Pass>
+			<SNILS>111-111-111 13</SNILS>
+		</Login>
+		<Number>1</Number>
+		<Date>
+			<day>03</day>
+			<month>03</month>
+			<year>33</year>
+		</Date>
+		<Entries>Уволен</Entries>
+		<Document>Приказ от 13.11.22 № 3k</Document>
+	</Employee>
+	<Employee>
+		<Login>
+			<User>user4</User>
+			<Pass>pass4</Pass>
+			<SNILS>111-111-111 14</SNILS>
+		</Login>
+		<Number>1</Number>
+		<Date>
+			<day>04</day>
+			<month>04</month>
+			<year>24</year>
+		</Date>
+		<Entries>Уволен</Entries>
+		<Document>Приказ от 14.11.22 № 3k</Document>
+	</Employee>
+	<Employee>
+		<Login>
+			<User>user5</User>
+			<Pass>pass5</Pass>
+			<SNILS>111-111-111 15</SNILS>
+		</Login>
+		<Number>1</Number>
+		<Date>
+			<day>15</day>
+			<month>11</month>
+			<year>25</year>
+		</Date>
+		<Entries>Принят на работу</Entries>
+		<Document>Приказ от 05.11.25 № 3k</Document>
+	</Employee>
+</Employment_history>
