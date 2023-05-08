@@ -3,8 +3,10 @@ using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -27,7 +29,9 @@ namespace Employment_history
         private void Form2_Load(object sender, EventArgs e)
         {
             toolStripButton1.Enabled = false;
-            
+            dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
             //// Задаем отступы DataGridView
             //dataGridView1.Margin = new Padding(0, 0, 0, 50);
 
@@ -126,24 +130,23 @@ namespace Employment_history
 
         }
 
-        private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-            {
-                var cell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
+        //private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        //{
+        //    if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+        //    {
+        //        var cell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
 
-                // Установить режим переноса строк
-                cell.Style.WrapMode = DataGridViewTriState.True;
+        //        Установить режим переноса строк
+        //        cell.Style.WrapMode = DataGridViewTriState.True;
 
-                // Установить высоту строки равной высоте содержимого
-                var textSize = e.Graphics.MeasureString(cell.Value.ToString(), cell.Style.Font, e.CellBounds.Width);
-                dataGridView1.Rows[e.RowIndex].Height = (int)textSize.Height + 2;
-            }
-        }
+        //        Установить высоту строки равной высоте содержимого
+        //        var textSize = e.Graphics.MeasureString(cell.Value.ToString(), cell.Style.Font, e.CellBounds.Width);
+        //        dataGridView1.Rows[e.RowIndex].Height = (int)textSize.Height + 2;
+        //    }
+        //}
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
             
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
@@ -162,56 +165,99 @@ namespace Employment_history
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
         {
-            // Создание диалогового окна сохранения файла
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             saveFileDialog.Title = "Save file as";
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Открытие потока для записи данных в файл
                 using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
                 {
                     // Определяем ширину столбца для выравнивания
-                    int columnWidth = 15; int coeffWidth = columnWidth; int coeffWidthEntries = 75;
-                    //int columnWidthEntries = 100;
+                    int columnWidth = 15; int coeffWidth = columnWidth;
+                    int len;
+                    int[] maxWidth = new int[7];
 
-                    // Запись заголовков столбцов
-                    for (int i = 0; i < dataGridView1.Columns.Count; i++)
-                    {
-                        if (i == 0 || i == 1 || i == 2) continue;
-                        if (i == 5) columnWidth = coeffWidthEntries;
-                        string header = String.Format("{0," + columnWidth + "}", dataGridView1.Columns[i].HeaderText);
-                        writer.Write(header);
-
-                        if (i != dataGridView1.Columns.Count - 1)
-                        {
-                            //writer.Write("\t");
-                        }
-                    }
-                    writer.WriteLine();
-
-                    // Запись данных
+                    int count = 0;
+                    //Определяем самые широкие строки
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        columnWidth = coeffWidth;
-                        for (int i = 0; i < dataGridView1.Columns.Count; i++)
-                        {
-                            if (i == 0 || i == 1 || i == 2) continue;
-                            if (i == 5) columnWidth = coeffWidthEntries;
-                            string value = String.Format("{0," + columnWidth + "}", row.Cells[i].Value);
-                            writer.Write(value);
+                        count++;
+                        if (count == dataGridView1.RowCount) continue;
 
-                            if (i != dataGridView1.Columns.Count - 1)
-                            {
-                               // writer.Write("\t");
-                            }
+                        for (int i = 3; i < dataGridView1.Columns.Count; i++)
+                        {
+                            len = row.Cells[i].Value.ToString().Length;
+
+                            if (len > maxWidth[i]) maxWidth[i] = len;
                         }
-                        writer.WriteLine();
                     }
 
+                    for (int i = 0; i < maxWidth.Length; i++)
+                    {
+                        maxWidth[i] += coeffWidth;
+                    }
+
+                    //Запись заголовков столбцов
+                    string header = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
+                                    "\t{3," + maxWidth[6] + "}", dataGridView1.Columns[3].HeaderText,
+                                    dataGridView1.Columns[4].HeaderText, dataGridView1.Columns[5].HeaderText,
+                                    dataGridView1.Columns[6].HeaderText);
+                    writer.Write(header);
+                    writer.WriteLine();
+
+                    //Запись строк
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
+                    {
+                        string value = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
+                                       "\t{3," + maxWidth[6] + "}", row.Cells[3].Value, row.Cells[4].Value, row.Cells[5].Value, 
+                                       row.Cells[6].Value);
+                        writer.Write(value);
+                        writer.WriteLine();
+                    }
                 }
             }
         }
+
+        // Запись заголовков столбцов
+        //for (int i = 3; i < dataGridView1.Columns.Count; i++)
+        //{
+        //    if (i == 3) columnWidth = maxWidth[3];
+        //    else if (i == 4) columnWidth = maxWidth[4];
+        //    else if (i == 5) columnWidth = maxWidth[5];
+        //    else if (i == 6) columnWidth = maxWidth[6];
+        //    //string header = String.Format("{0," + columnWidth + "}", dataGridView1.Columns[i].HeaderText);
+
+        //    string header = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
+        //                    "\t{3," + maxWidth[6] + "}", dataGridView1.Columns[3].HeaderText, 
+        //                    dataGridView1.Columns[4].HeaderText, dataGridView1.Columns[5].HeaderText, 
+        //                    dataGridView1.Columns[6].HeaderText);
+
+
+        //    writer.Write(header);
+
+        //    if (i != dataGridView1.Columns.Count - 1)
+        //    {
+        //        writer.Write("\t");
+        //    }
+        //}
+        //writer.WriteLine();
+
+
+        //for (int i = 3; i < dataGridView1.Columns.Count; i++)
+        //{
+        //    if (i == 3) columnWidth = maxWidth[3];
+        //    else if (i == 4) columnWidth = maxWidth[4];
+        //    else if (i == 5) columnWidth = maxWidth[5];
+        //    else if (i == 6) columnWidth = maxWidth[6];
+        //    string value = String.Format("{0," + columnWidth + "}", row.Cells[i].Value);
+        //    //string value = String.Format("{0," + columnWidth3 + "1," + columnWidth4 + "2," + columnWidth5 + "3," + columnWidth6 + "}", row.Cells[i].Value);
+        //    writer.Write(value);
+
+        //    if (i != dataGridView1.Columns.Count - 1)
+        //    {
+        //        writer.Write("\t");
+        //    }
+        //}
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
