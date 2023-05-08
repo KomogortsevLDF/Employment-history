@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 
-//< Awards > Почетная грамота за помощь в подготовке к проекту "Инновация"</Awards>
 namespace Employment_history
 {
     public partial class Form1 : Form
@@ -48,9 +47,9 @@ namespace Employment_history
             string password = textBox2.Text;
             string SNILS = textBox3.Text;
 
-            username = "user1";
-            password = "pass1";
-            SNILS = "111-111-111 11";
+            username = "user55";
+            password = "pass55";
+            SNILS = "111-111-111 55";
 
             snils = SNILS;
             // Проверяем, существует ли файл с данными пользователей
@@ -87,9 +86,9 @@ namespace Employment_history
             
             foreach (XmlNode employeeNode in employeeNodes)
             {
-                if (employeeNode.SelectSingleNode("Login/User").InnerText == username &&
-                    employeeNode.SelectSingleNode("Login/Pass").InnerText == password &&
-                    employeeNode.SelectSingleNode("Login/SNILS").InnerText == SNILS) 
+                if (employeeNode.SelectSingleNode("User").InnerText == username &&
+                    employeeNode.SelectSingleNode("Pass").InnerText == password &&
+                    employeeNode.SelectSingleNode("SNILS").InnerText == SNILS) 
                 { return true; }
             }
 

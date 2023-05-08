@@ -21,7 +21,9 @@ namespace Employment_history
         private string DataFileName = "data.xml";
         private void Form4_Load(object sender, EventArgs e)
         {
-
+            textBox3.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 9);
+            textBox4.Text = "Принят в административный отдел на должность секретаря";
+            textBox5.Text = "Приказ от 13.09.2023 №4 - k";
         }
 
         private void button1_Click(object sender, EventArgs e)
