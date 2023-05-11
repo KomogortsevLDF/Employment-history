@@ -101,15 +101,15 @@ namespace Employment_history
 
             dataSet.Tables.Add(dataTable);
 
-            DataTable tempTable = new DataTable();
-            tempTable.Columns.Add("User");
-            tempTable.Rows.Add("t1");
-            tempTable.Rows.Add("t2");
-            tempTable.Rows.Add("t3");
-            tempTable.Rows.Add("t4");
+            //DataTable tempTable = new DataTable();
+            //tempTable.Columns.Add("User");
+            //tempTable.Rows.Add("t1");
+            //tempTable.Rows.Add("t2");
+            //tempTable.Rows.Add("t3");
+            //tempTable.Rows.Add("t4");
 
-            bindingSource1.DataSource = tempTable;
-            bindingNavigator1.BindingSource = bindingSource1;
+            //bindingSource1.DataSource = tempTable;
+            //bindingNavigator1.BindingSource = bindingSource1;
             //bindingNavigatorMoveNextItem.PerformClick();
 
             DataView dataView = new DataView(dataTable);
@@ -122,6 +122,8 @@ namespace Employment_history
             dataGridView1.Columns["Pass"].Visible = false;
             dataGridView1.ReadOnly = true;
 
+            dataGridView1.Columns["Number"].Width = 50;
+            dataGridView1.Columns["Date"].Width = 75;
             dataGridView1.Columns["Number"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dataGridView1.Columns["Date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             //dataGridView1.Columns["Entries"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -270,8 +272,7 @@ namespace Employment_history
                 form4.ShowDialog();
 
                 if (row == null) return;
-
-                if (row[0] == "" || row[1] == "" || row[4] == "" || row[5] == "" || row[6] == "")
+                else if (row[0] == "" || row[1] == "" || row[4] == "" || row[5] == "" || row[6] == "")
                 {
                     MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     row = null;
@@ -285,7 +286,7 @@ namespace Employment_history
                 //DataSet dataSet = new DataSet();
                 //dataSet.Tables.Add(dataTable);
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
-
+                row = null;
                 //dataTable.WriteXml("data.xml", XmlWriteMode.WriteSchema);
             }
         }
@@ -379,8 +380,7 @@ namespace Employment_history
                 form5.ShowDialog();
 
                 if (row == null) return;
-
-                if (row[4] == "" || row[5] == "" || row[6] == "")
+                else if (row[4] == "" || row[5] == "" || row[6] == "")
                 {
                     MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     row = null;
@@ -394,6 +394,7 @@ namespace Employment_history
                 dataTable.Rows.Add(row);
 
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
+                row = null;
             }
         }
 
@@ -466,8 +467,7 @@ namespace Employment_history
                 form5.ShowDialog();
 
                 if (row == null) return;
-
-                if (row[4] == "" || row[5] == "" || row[6] == "")
+                else if (row[4] == "" || row[5] == "" || row[6] == "")
                 {
                     MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     row = null;
@@ -481,6 +481,7 @@ namespace Employment_history
                 TableAwards.Rows.Add(row);
 
                 AwardsSet.WriteXml(AwardsFilename, XmlWriteMode.IgnoreSchema);
+                row = null;
             }
         }
 
@@ -541,8 +542,7 @@ namespace Employment_history
                 form5.ShowDialog();
 
                 if (row == null) return;
-
-                if (row[4] == "" || row[5] == "" || row[6] == "")
+                else if (row[4] == "" || row[5] == "" || row[6] == "")
                 {
                     MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     row = null;
@@ -556,6 +556,7 @@ namespace Employment_history
                 dataTable.Rows.Add(row);
 
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
+                row = null;
             }
         }
 
@@ -569,8 +570,7 @@ namespace Employment_history
                 form5.ShowDialog();
 
                 if (row == null) return;
-
-                if (row[4] == "" || row[5] == "" || row[6] == "")
+                else if (row[4] == "" || row[5] == "" || row[6] == "")
                 {
                     MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     row = null;
@@ -584,6 +584,7 @@ namespace Employment_history
                 dataTable.Rows.Add(row);
 
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
+                row = null;
             }
         }
 

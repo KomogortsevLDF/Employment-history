@@ -27,6 +27,9 @@ namespace Employment_history
         private void Form3_Load(object sender, EventArgs e)
         {
             toolStripButton1.Enabled = false;
+            dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
             //bindingNavigator1.Enabled = true;
             // Создаем объект XmlDocument и загружаем в него XML-файл
             xmlDoc = new XmlDocument();
@@ -80,49 +83,55 @@ namespace Employment_history
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // Создание диалогового окна сохранения файла
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             saveFileDialog.Title = "Save file as";
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // Открытие потока для записи данных в файл
                 using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
                 {
                     // Определяем ширину столбца для выравнивания
-                    int columnWidth = 50;
+                    int columnWidth = 15; int coeffWidth = columnWidth;
+                    int len;
+                    int[] maxWidth = new int[7];
 
-                    // Запись заголовков столбцов
-                    for (int i = 0; i < dataGridView1.Columns.Count; i++)
-                    {
-                        // Выравнивание по центру
-                        string header = String.Format("{0," + columnWidth + "}", dataGridView1.Columns[i].HeaderText);
-                        writer.Write(header);
-
-                        if (i != dataGridView1.Columns.Count - 1)
-                        {
-                            writer.Write("\t");
-                        }
-                    }
-                    writer.WriteLine();
-
-                    // Запись данных
+                    int count = 0;
+                    //Определяем самые широкие строки
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        for (int i = 0; i < dataGridView1.Columns.Count; i++)
-                        {
-                            // Выравнивание по центру
-                            string value = String.Format("{0," + columnWidth + "}", row.Cells[i].Value);
-                            writer.Write(value);
+                        count++;
+                        if (count == dataGridView1.RowCount) continue;
 
-                            if (i != dataGridView1.Columns.Count - 1)
-                            {
-                                writer.Write("\t");
-                            }
+                        for (int i = 3; i < dataGridView1.Columns.Count; i++)
+                        {
+                            len = row.Cells[i].Value.ToString().Length;
+
+                            if (len > maxWidth[i]) maxWidth[i] = len;
                         }
-                        writer.WriteLine();
                     }
 
+                    for (int i = 0; i < maxWidth.Length; i++)
+                    {
+                        maxWidth[i] += coeffWidth;
+                    }
+
+                    //Запись заголовков столбцов
+                    string header = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
+                                    "\t{3," + maxWidth[6] + "}", dataGridView1.Columns[3].HeaderText,
+                                    dataGridView1.Columns[4].HeaderText, dataGridView1.Columns[5].HeaderText,
+                                    dataGridView1.Columns[6].HeaderText);
+                    writer.Write(header);
+                    writer.WriteLine();
+
+                    //Запись строк
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
+                    {
+                        string value = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
+                                       "\t{3," + maxWidth[6] + "}", row.Cells[3].Value, row.Cells[4].Value, row.Cells[5].Value,
+                                       row.Cells[6].Value);
+                        writer.Write(value);
+                        writer.WriteLine();
+                    }
                 }
             }
         }

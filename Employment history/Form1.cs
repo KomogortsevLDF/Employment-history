@@ -47,9 +47,9 @@ namespace Employment_history
             string password = textBox2.Text;
             string SNILS = textBox3.Text;
 
-            username = "user55";
-            password = "pass55";
-            SNILS = "111-111-111 55";
+            username = "user1";
+            password = "pass1";
+            SNILS = "111-111-111 11";
 
             snils = SNILS;
             // Проверяем, существует ли файл с данными пользователей
