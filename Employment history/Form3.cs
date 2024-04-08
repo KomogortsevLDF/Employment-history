@@ -15,11 +15,62 @@ namespace Employment_history
 {
     public partial class Form3 : Form
     {
+        private Timer inactivityTimer;
         public Form3(string Snils)
         {
             snils = Snils;
             InitializeComponent();
+
+            // Инициализация таймера
+            inactivityTimer = new Timer();
+            inactivityTimer.Interval = 4000;
+            inactivityTimer.Tick += InactivityTimer_Tick;
+            inactivityTimer.Start();
+
+
+            // Добавление обработчиков событий для мыши
+            this.MouseMove += Form1_MouseMove;
+            this.KeyPress += Form1_KeyPress;
+            this.MouseWheel += Form1_MouseWheel;
+
+            // Добавление обработчиков событий для клавиатуры
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
         }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void InactivityTimer_Tick(object sender, EventArgs e)
+        {
+            MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        // Метод для сброса таймера при активности пользователя
+        private void ResetInactivityTimer()
+        {
+            inactivityTimer.Stop();
+            inactivityTimer.Start();
+        }
+
+
         private string snils;
 
         XmlDocument xmlDoc;

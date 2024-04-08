@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Timers;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -8,53 +7,59 @@ namespace Employment_history
 {
     public partial class Form1 : Form
     {
-        class InactivityMonitor
-        {
-            private System.Timers.Timer timer;
-            private int inactivityThreshold; // Порог бездействия в миллисекундах
-
-            public event EventHandler InactivityDetected;
-
-            public InactivityMonitor(int threshold)
-            {
-                inactivityThreshold = threshold;
-                timer = new System.Timers.Timer(threshold);
-                timer.Elapsed += TimerElapsed;
-                timer.AutoReset = true;
-                ResetTimer();
-            }
-
-            public void Start()
-            {
-                timer.Start();
-            }
-
-            public void Stop()
-            {
-                timer.Stop();
-            }
-
-            public void ResetTimer()
-            {
-                timer.Stop();
-                timer.Interval = inactivityThreshold;
-                timer.Start();
-            }
-
-            private void TimerElapsed(object sender, ElapsedEventArgs e)
-            {
-                OnInactivityDetected();
-            }
-
-            protected virtual void OnInactivityDetected()
-            {
-                InactivityDetected?.Invoke(this, EventArgs.Empty);
-            }
-        }
+        private Timer inactivityTimer;
         public Form1()
         {
             InitializeComponent();
             button2.Visible = false;
+
+            // Инициализация таймера
+            inactivityTimer = new Timer();
+            inactivityTimer.Interval = 4000;
+            inactivityTimer.Tick += InactivityTimer_Tick;
+            inactivityTimer.Start();
+
+
+            // Добавление обработчиков событий для мыши
+            this.MouseMove += Form1_MouseMove;
+            this.KeyPress += Form1_KeyPress;
+            this.MouseWheel += Form1_MouseWheel;
+
+            // Добавление обработчиков событий для клавиатуры
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void Form1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
+        private void InactivityTimer_Tick(object sender, EventArgs e)
+        {
+            //MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        // Метод для сброса таймера при активности пользователя
+        private void ResetInactivityTimer()
+        {
+            inactivityTimer.Stop();
+            inactivityTimer.Start();
         }
 
         public string snils { get; set; }
@@ -86,6 +91,9 @@ namespace Employment_history
 
         private void button1_Click(object sender, EventArgs e)
         {
+            textBox1.Text = "user1";
+            textBox2.Text = "pass1";
+            textBox3.Text = "111-111-111 11";
 
             string username = textBox1.Text;
             string password = textBox2.Text;
@@ -156,6 +164,8 @@ namespace Employment_history
 
         private void button2_Click(object sender, EventArgs e)
         {
+            textBox1.Text = "acc1";
+            textBox2.Text = "pass1";
             string username = textBox1.Text;
             string password = textBox2.Text;
 
