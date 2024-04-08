@@ -21,8 +21,13 @@ namespace Employment_history
         private string Form5_Sender;
         private void Form5_Load(object sender, EventArgs e)
         {
-            textBox3.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 9);
-
+            textBox3.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 8);
+            
+            if (Form5_Sender == "toolStripMenuItem2")
+            {
+                textBox4.Text = "Принят в административный отдел на должность секретаря";
+                textBox5.Text = "Приказ от 13.09.2023 №4 - k";
+            }
             if (Form5_Sender == "toolStripMenuItem3")
             {
                 textBox4.Text = "Переведен на должность маркетолога";
@@ -49,7 +54,7 @@ namespace Employment_history
         {
             Form2 form2 = this.Owner as Form2;
             // Создаем массив строк со значениями из TextBox
-            string[] row = new string[] { "", "", "", "", textBox3.Text, textBox4.Text, textBox5.Text };
+            string[] row = new string[] { "0", "0", "", "", textBox3.Text, textBox4.Text, textBox5.Text };
             form2.row = row;
 
             this.Close();

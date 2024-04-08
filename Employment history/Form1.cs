@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Timers;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -7,6 +8,49 @@ namespace Employment_history
 {
     public partial class Form1 : Form
     {
+        class InactivityMonitor
+        {
+            private System.Timers.Timer timer;
+            private int inactivityThreshold; // Порог бездействия в миллисекундах
+
+            public event EventHandler InactivityDetected;
+
+            public InactivityMonitor(int threshold)
+            {
+                inactivityThreshold = threshold;
+                timer = new System.Timers.Timer(threshold);
+                timer.Elapsed += TimerElapsed;
+                timer.AutoReset = true;
+                ResetTimer();
+            }
+
+            public void Start()
+            {
+                timer.Start();
+            }
+
+            public void Stop()
+            {
+                timer.Stop();
+            }
+
+            public void ResetTimer()
+            {
+                timer.Stop();
+                timer.Interval = inactivityThreshold;
+                timer.Start();
+            }
+
+            private void TimerElapsed(object sender, ElapsedEventArgs e)
+            {
+                OnInactivityDetected();
+            }
+
+            protected virtual void OnInactivityDetected()
+            {
+                InactivityDetected?.Invoke(this, EventArgs.Empty);
+            }
+        }
         public Form1()
         {
             InitializeComponent();
@@ -47,10 +91,6 @@ namespace Employment_history
             string password = textBox2.Text;
             string SNILS = textBox3.Text;
 
-            username = "user1";
-            password = "pass1";
-            SNILS = "111-111-111 11";
-
             snils = SNILS;
             // Проверяем, существует ли файл с данными пользователей
             if (!File.Exists(DataFileName))
@@ -79,7 +119,7 @@ namespace Employment_history
 
         private bool IsLoginValid(string username, string password, string SNILS)
         {
-            // Читаем данные из файла и проверяем, существует ли пользователь с таким логином и паролем
+            // Читаем данные из файла и проверяем, существует ли пользователь с таким логином и паролем и снилсом
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(DataFileName);
             XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
@@ -113,81 +153,12 @@ namespace Employment_history
 
             return false;
         }
-        //private void button3_Click(object sender, EventArgs e)
-        //{
-        //    string username = textBox1.Text;
-        //    string password = textBox2.Text;
-        //    string INN = textBox3.Text;
-        //    string SNILS = textBox4.Text;
-
-        //    // Проверяем, правильно ли введен логин и пароль
-        //    if (!IsInputValid(username, password, INN, SNILS))
-        //    {
-        //        MessageBox.Show("Логин и пароль не могут быть пустыми!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //        return;
-        //    }
-
-        //    // Проверяем, существует ли файл с данными пользователей
-        //    if (!File.Exists(filePath_user))
-        //    {
-        //        // Создаем файл с данными пользователей, если он не существует
-        //        using (StreamWriter sw = new StreamWriter(filePath_user))
-        //        {
-        //            sw.WriteLine($"{username}:{password}");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // Проверяем, существует ли пользователь с таким логином
-        //        if (IsUserExists(username))
-        //        {
-        //            MessageBox.Show("Пользователь с таким логином уже существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //            return;
-        //        }
-
-        //        // Добавляем нового пользователя в файл с данными пользователей
-        //        using (StreamWriter sw = File.AppendText(filePath_user))
-        //        {
-        //            sw.WriteLine($"{username}:{password}:{INN}:{SNILS}");
-        //        }
-        //    }
-
-        //    MessageBox.Show("Вы успешно зарегистрировались!", "Регистрация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //}
-
-        //private bool IsUserExists(string username)
-        //{
-        //    // Читаем данные из файла и проверяем, существует ли пользователь с
-        //    // таким логином
-        //    using (StreamReader sr = new StreamReader(filePath_user))
-        //    {
-        //        string line;
-        //        while ((line = sr.ReadLine()) != null)
-        //        {
-        //            string[] parts = line.Split(':');
-        //            if (parts[0] == username)
-        //            {
-        //                return true;
-        //            }
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool IsInputValid(string username, string password, string INN, string SNILS)
-        //{
-        //    return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)
-        //        && !string.IsNullOrEmpty(INN) && !string.IsNullOrEmpty(SNILS);
-        //}
 
         private void button2_Click(object sender, EventArgs e)
         {
             string username = textBox1.Text;
             string password = textBox2.Text;
 
-            username = "acc1";
-            password = "pass1";
             // Проверяем, существует ли файл с данными работодателей
             if (!File.Exists(filePath_accountant))
             {

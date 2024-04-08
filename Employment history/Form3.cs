@@ -21,8 +21,12 @@ namespace Employment_history
             InitializeComponent();
         }
         private string snils;
+
         XmlDocument xmlDoc;
         DataTable dataTable;
+
+        DataTable TableAwards;
+        DataSet AwardsSet;
 
         private void Form3_Load(object sender, EventArgs e)
         {
@@ -30,7 +34,6 @@ namespace Employment_history
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
-            //bindingNavigator1.Enabled = true;
             // Создаем объект XmlDocument и загружаем в него XML-файл
             xmlDoc = new XmlDocument();
             xmlDoc.Load("data.xml");
@@ -62,9 +65,6 @@ namespace Employment_history
                 dataTable.Rows.Add(user, pass, snils, number, date, entries, document);
             }
 
-            bindingSource1.DataSource = dataTable;
-            this.bindingNavigator1.BindingSource = bindingSource1;
-
             DataView dataView = new DataView(dataTable);
             dataView.RowFilter = $"SNILS = '{snils}'";
 
@@ -79,6 +79,40 @@ namespace Employment_history
             dataGridView1.Columns["Date"].Width = 75;
             dataGridView1.Columns["Number"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dataGridView1.Columns["Date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+
+
+
+
+            XmlDocument xmlAwards = new XmlDocument();
+            TableAwards = new DataTable("Employee");
+            AwardsSet = new DataSet("Awards");
+            xmlAwards.Load("awards.xml");
+
+            employeeNodes = xmlAwards.SelectNodes("//Employee");
+
+            TableAwards.Columns.Add("User");
+            TableAwards.Columns.Add("Pass");
+            TableAwards.Columns.Add("SNILS");
+            TableAwards.Columns.Add("Number");
+            TableAwards.Columns.Add("Date");
+            TableAwards.Columns.Add("Entries");
+            TableAwards.Columns.Add("Document");
+
+            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
+            foreach (XmlNode employeeNode in employeeNodes)
+            {
+                string user = employeeNode.SelectSingleNode("User").InnerText;
+                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
+                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
+                string number = employeeNode.SelectSingleNode("Number").InnerText;
+                string date = employeeNode.SelectSingleNode("Date").InnerText;
+                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
+                string document = employeeNode.SelectSingleNode("Document").InnerText;
+
+                TableAwards.Rows.Add(user, pass, snils, number, date, entries, document);
+            }
+
+            AwardsSet.Tables.Add(TableAwards);
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
@@ -161,37 +195,6 @@ namespace Employment_history
             toolStripButton1.Enabled = true;
             toolStripButton2.Enabled = false;
 
-            XmlDocument xmlAwards = new XmlDocument();
-            DataTable TableAwards = new DataTable("Employee");
-            DataSet AwardsSet = new DataSet("Awards");
-            xmlAwards.Load("awards.xml");
-
-            XmlNodeList employeeNodes = xmlAwards.SelectNodes("//Employee");
-
-            TableAwards.Columns.Add("User");
-            TableAwards.Columns.Add("Pass");
-            TableAwards.Columns.Add("SNILS");
-            TableAwards.Columns.Add("Number");
-            TableAwards.Columns.Add("Date");
-            TableAwards.Columns.Add("Entries");
-            TableAwards.Columns.Add("Document");
-
-            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                string user = employeeNode.SelectSingleNode("User").InnerText;
-                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
-                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
-                string number = employeeNode.SelectSingleNode("Number").InnerText;
-                string date = employeeNode.SelectSingleNode("Date").InnerText;
-                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
-                string document = employeeNode.SelectSingleNode("Document").InnerText;
-
-                TableAwards.Rows.Add(user, pass, snils, number, date, entries, document);
-            }
-
-            AwardsSet.Tables.Add(TableAwards);
-
             DataView dataView = new DataView(TableAwards);
             dataView.RowFilter = $"SNILS = '{snils}'";
 
@@ -201,11 +204,6 @@ namespace Employment_history
             dataGridView1.Columns["User"].Visible = false;
             dataGridView1.Columns["Pass"].Visible = false;
             dataGridView1.ReadOnly = true;
-
-            //if (!IsUserExist(textBox1.Text))
-            //{
-            //    MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //}
         }
     }
 }

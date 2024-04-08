@@ -19,12 +19,14 @@ namespace Employment_history
         {
             InitializeComponent();
         }
-        //public string snils { get; set; }
         public string[] row{ get; set; }
         private string DataFileName = "data.xml";
-        XmlDocument xmlDoc;
+
         DataTable dataTable;
         DataSet dataSet = new DataSet("Employment_History");
+
+        DataTable TableAwards;
+        DataSet AwardsSet;
 
         private void Form2_Load(object sender, EventArgs e)
         {
@@ -32,44 +34,8 @@ namespace Employment_history
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
-            //// Задаем отступы DataGridView
-            //dataGridView1.Margin = new Padding(0, 0, 0, 50);
-
-            //// Привязываем DataGridView к нижнему краю родительского элемента
-            //dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-
-
-            //dataTable = new DataTable();
-            //dataTable.ReadXml(DataFileName);
-
-            //DataXML = new DataSet();
-
-            //FileStream fs = new FileStream(file_name, FileMode.Open);
-            //xml_read = new XmlTextReader(fs);
-            //DataXML.ReadXml(xml_read, XmlReadMode.InferSchema);
-            //bindingSource1.DataMember = DataXML.Tables[0].ToString();
-            //bindingSource1.DataSource = DataXML.Tables[0];
-
-            //this.bindingNavigator1.BindingSource = bindingSource1;
-            //dataGridView1.DataSource = bindingSource1;
-            //dataGridView1.EditMode = DataGridViewEditMode.EditOnEnter;
-
-            //dataGridView1.Columns[0].Width = 25;
-            //dataGridView1.Columns[0].HeaderText = "№";
-            //dataGridView1.Columns[1].Width = 25;
-            //dataGridView1.Columns[1].HeaderText = "Число";
-            //dataGridView1.Columns[2].Width = 25;
-            //dataGridView1.Columns[2].HeaderText = "Месяц";
-            //dataGridView1.Columns[3].Width = 25;
-            //dataGridView1.Columns[3].HeaderText = "Год";
-            //dataGridView1.Columns[4].Width = 25;
-            //dataGridView1.Columns[4].HeaderText = "Записи";
-            //dataGridView1.Columns[5].Width = 25;
-            //dataGridView1.Columns[5].HeaderText = "Документ";
-            //fs.Close();
-
             // Создаем объект XmlDocument и загружаем в него XML-файл
-            xmlDoc = new XmlDocument();
+            XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.Load(DataFileName);
 
             // Выбираем все узлы "Employee"
@@ -101,17 +67,6 @@ namespace Employment_history
 
             dataSet.Tables.Add(dataTable);
 
-            //DataTable tempTable = new DataTable();
-            //tempTable.Columns.Add("User");
-            //tempTable.Rows.Add("t1");
-            //tempTable.Rows.Add("t2");
-            //tempTable.Rows.Add("t3");
-            //tempTable.Rows.Add("t4");
-
-            //bindingSource1.DataSource = tempTable;
-            //bindingNavigator1.BindingSource = bindingSource1;
-            //bindingNavigatorMoveNextItem.PerformClick();
-
             DataView dataView = new DataView(dataTable);
             dataView.RowFilter = $"SNILS = ''";
 
@@ -126,42 +81,55 @@ namespace Employment_history
             dataGridView1.Columns["Date"].Width = 75;
             dataGridView1.Columns["Number"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             dataGridView1.Columns["Date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            //dataGridView1.Columns["Entries"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            //dataGridView1.Columns["Document"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            // Устанавливаем режим автоматического изменения ширины столбцов
 
+
+
+
+            XmlDocument xmlAwards = new XmlDocument();
+            TableAwards = new DataTable("Employee");
+            AwardsSet = new DataSet("Awards");
+            xmlAwards.Load("awards.xml");
+
+            employeeNodes = xmlAwards.SelectNodes("//Employee");
+
+            TableAwards.Columns.Add("User");
+            TableAwards.Columns.Add("Pass");
+            TableAwards.Columns.Add("SNILS");
+            TableAwards.Columns.Add("Number");
+            TableAwards.Columns.Add("Date");
+            TableAwards.Columns.Add("Entries");
+            TableAwards.Columns.Add("Document");
+
+            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
+            foreach (XmlNode employeeNode in employeeNodes)
+            {
+                string user = employeeNode.SelectSingleNode("User").InnerText;
+                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
+                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
+                string number = employeeNode.SelectSingleNode("Number").InnerText;
+                string date = employeeNode.SelectSingleNode("Date").InnerText;
+                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
+                string document = employeeNode.SelectSingleNode("Document").InnerText;
+
+                TableAwards.Rows.Add(user, pass, snils, number, date, entries, document);
+            }
+            AwardsSet.Tables.Add(TableAwards);
         }
-
-        //private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        //{
-        //    if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-        //    {
-        //        var cell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
-
-        //        Установить режим переноса строк
-        //        cell.Style.WrapMode = DataGridViewTriState.True;
-
-        //        Установить высоту строки равной высоте содержимого
-        //        var textSize = e.Graphics.MeasureString(cell.Value.ToString(), cell.Style.Font, e.CellBounds.Width);
-        //        dataGridView1.Rows[e.RowIndex].Height = (int)textSize.Height + 2;
-        //    }
-        //}
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
 
             string filterValue = textBox1.Text;
-            //DataView dataView = (DataView)dataGridView1.DataSource;
             DataView dataView = new DataView(dataTable);
             dataView.RowFilter = $"SNILS = '{filterValue}'";
             dataGridView1.DataSource = dataView;
 
             if (!IsSnilsValid(textBox1.Text))
             {
-                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("СНИЛС сотрудника введен неверно",
+                    "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -220,75 +188,49 @@ namespace Employment_history
             }
         }
 
-        // Запись заголовков столбцов
-        //for (int i = 3; i < dataGridView1.Columns.Count; i++)
-        //{
-        //    if (i == 3) columnWidth = maxWidth[3];
-        //    else if (i == 4) columnWidth = maxWidth[4];
-        //    else if (i == 5) columnWidth = maxWidth[5];
-        //    else if (i == 6) columnWidth = maxWidth[6];
-        //    //string header = String.Format("{0," + columnWidth + "}", dataGridView1.Columns[i].HeaderText);
+        void MenuItem2_Support()
+        {
+            if (row == null) return;
+            else if (row[0] == "" || row[1] == "" || row[4] == "" || row[5] == "" || row[6] == "")
+            {
+                MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                if (row[0] == "0") row[0] = SnilsUsername(textBox1.Text);
+                if (row[1] == "0") row[1] = SnilsPassword(textBox1.Text);
+                row[2] = textBox1.Text;
+                row[3] = NextNumber(textBox1.Text, DataFileName);
+                dataTable.Rows.Add(row);
 
-        //    string header = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
-        //                    "\t{3," + maxWidth[6] + "}", dataGridView1.Columns[3].HeaderText, 
-        //                    dataGridView1.Columns[4].HeaderText, dataGridView1.Columns[5].HeaderText, 
-        //                    dataGridView1.Columns[6].HeaderText);
+                dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
+            }
 
+            row = null;
 
-        //    writer.Write(header);
-
-        //    if (i != dataGridView1.Columns.Count - 1)
-        //    {
-        //        writer.Write("\t");
-        //    }
-        //}
-        //writer.WriteLine();
-
-
-        //for (int i = 3; i < dataGridView1.Columns.Count; i++)
-        //{
-        //    if (i == 3) columnWidth = maxWidth[3];
-        //    else if (i == 4) columnWidth = maxWidth[4];
-        //    else if (i == 5) columnWidth = maxWidth[5];
-        //    else if (i == 6) columnWidth = maxWidth[6];
-        //    string value = String.Format("{0," + columnWidth + "}", row.Cells[i].Value);
-        //    //string value = String.Format("{0," + columnWidth3 + "1," + columnWidth4 + "2," + columnWidth5 + "3," + columnWidth6 + "}", row.Cells[i].Value);
-        //    writer.Write(value);
-
-        //    if (i != dataGridView1.Columns.Count - 1)
-        //    {
-        //        writer.Write("\t");
-        //    }
-        //}
+            return;
+        }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            if (!IsSnilsValid(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (IsUserExist(textBox1.Text)) MessageBox.Show("Данный сотрудник уже числится в базе ПФР", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else
+            if (!IsSnilsValid(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!IsUserExist(textBox1.Text))
             {
                 Form4 form4 = new Form4();
                 form4.Owner = this;
                 form4.ShowDialog();
 
-                if (row == null) return;
-                else if (row[0] == "" || row[1] == "" || row[4] == "" || row[5] == "" || row[6] == "")
-                {
-                    MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    row = null;
-                    return;
-                }
-
-                row[2] = textBox1.Text;
-                row[3] = "1";
-                dataTable.Rows.Add(row);
-
-                //DataSet dataSet = new DataSet();
-                //dataSet.Tables.Add(dataTable);
-                dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
-                row = null;
-                //dataTable.WriteXml("data.xml", XmlWriteMode.WriteSchema);
+                MenuItem2_Support();
             }
+            else if (FirstWordFired(DataFileName, textBox1.Text))
+            {
+                Form5 form5 = new Form5("toolStripMenuItem2");
+                form5.Owner = this;
+                form5.ShowDialog();
+
+                MenuItem2_Support();
+            }
+            else MessageBox.Show("Данный сотрудник уже числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private string SnilsUsername(string Snils)
@@ -343,6 +285,7 @@ namespace Employment_history
 
             return (count+1).ToString();    
         }
+
         private bool IsSnilsValid(string input)
         {
             // Создаем регулярное выражение, соответствующее образцу
@@ -373,7 +316,7 @@ namespace Employment_history
         {
             toolStripMenuItem3.Tag = "toolStripMenuItem3";
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else
+            else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
                 Form5 form5 = new Form5("toolStripMenuItem3");
                 form5.Owner = this;
@@ -396,6 +339,7 @@ namespace Employment_history
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
+            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
@@ -411,39 +355,7 @@ namespace Employment_history
                 toolStripButton2.Enabled = true;
             }
 
-            XmlDocument xmlAwards = new XmlDocument();
-            DataTable TableAwards = new DataTable("Employee");
-            DataSet AwardsSet = new DataSet("Awards");
-            xmlAwards.Load("awards.xml");
             string AwardsFilename = "awards.xml";
-
-            XmlNodeList employeeNodes = xmlAwards.SelectNodes("//Employee");
-
-            TableAwards.Columns.Add("User");
-            TableAwards.Columns.Add("Pass");
-            TableAwards.Columns.Add("SNILS");
-            TableAwards.Columns.Add("Number");
-            TableAwards.Columns.Add("Date");
-            TableAwards.Columns.Add("Entries");
-            TableAwards.Columns.Add("Document");
-
-            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                string user = employeeNode.SelectSingleNode("User").InnerText;
-                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
-                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
-                string number = employeeNode.SelectSingleNode("Number").InnerText;
-                string date = employeeNode.SelectSingleNode("Date").InnerText;
-                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
-                string document = employeeNode.SelectSingleNode("Document").InnerText;
-
-                TableAwards.Rows.Add(user, pass, snils, number, date, entries, document);
-            }
-
-            AwardsSet.Tables.Add(TableAwards);
-            //bindingSource1.DataSource = TableAwards;
-            //this.bindingNavigator1.BindingSource = bindingSource1;
 
             DataView dataView = new DataView(TableAwards);
             dataView.RowFilter = $"SNILS = '{textBox1.Text}'";
@@ -455,12 +367,9 @@ namespace Employment_history
             dataGridView1.Columns["Pass"].Visible = false;
             dataGridView1.ReadOnly = true;
 
-            if (!IsUserExist(textBox1.Text))
-            {   
-                MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (sender == toolStripButton2) { }
-            else
+            else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
                 Form5 form5 = new Form5("toolStripMenuItem5");
                 form5.Owner = this;
@@ -483,34 +392,8 @@ namespace Employment_history
                 AwardsSet.WriteXml(AwardsFilename, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
+            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-
-        //private void bindingNavigatorMoveNextItem_Click(object sender, EventArgs e)
-        //{
-        //    //bindingNavigatorMoveNextItem.Enabled = false;
-        //    //bindingNavigatorMovePreviousItem.Enabled = true;
-
-        //    toolStripMenuItem5_Click(sender, e);
-
-        //    bindingNavigatorMoveNextItem.Enabled = false;
-        //}
-
-        //private void bindingNavigatorMovePreviousItem_Click(object sender, EventArgs e)
-        //{
-        //    //MessageBox.Show("Hands Up");
-        //    bindingNavigatorMoveNextItem.Enabled = true;
-        //    bindingNavigatorMovePreviousItem.Enabled = false;
-
-        //    DataView dataView = new DataView(dataTable);
-        //    dataView.RowFilter = $"SNILS = '{textBox1.Text}'";
-
-        //    // Назначаем DataTable источником данных для DataGridView
-        //    dataGridView1.DataSource = dataView;
-        //    dataGridView1.Columns["SNILS"].Visible = false;
-        //    dataGridView1.Columns["User"].Visible = false;
-        //    dataGridView1.Columns["Pass"].Visible = false;
-        //    dataGridView1.ReadOnly = true;
-        //}
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
@@ -535,7 +418,7 @@ namespace Employment_history
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else
+            else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
                 Form5 form5 = new Form5("toolStripMenuItem4");
                 form5.Owner = this;
@@ -558,12 +441,13 @@ namespace Employment_history
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
+            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else
+            else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
                 Form5 form5 = new Form5("toolStripMenuItem6");
                 form5.Owner = this;
@@ -586,37 +470,36 @@ namespace Employment_history
                 dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
+            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        //private void toolStripButton3_Click(object sender, EventArgs e)
-        //{
-        //    //DataView dataView = new DataView(dataTable);
-        //    //dataView.RowFilter = $"SNILS = '{textBox1.Text}'";
+        public bool FirstWordFired(string filePath, string targetValue)
+        {
+            // Загрузка XML-файла
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(filePath);
 
-        //    //// Назначаем DataTable источником данных для DataGridView
-        //    //dataGridView1.DataSource = dataView;
-        //    //dataGridView1.Columns["SNILS"].Visible = false;
-        //    //dataGridView1.Columns["User"].Visible = false;
-        //    //dataGridView1.Columns["Pass"].Visible = false;
-        //    //dataGridView1.ReadOnly = true;
-        //}
+            XmlNode lastEmployee = null;
 
-        //private void toolStripButton2_Click(object sender, EventArgs e)
-        //{
-        //    toolStripMenuItem5_Click(sender, e);
-        //}
+            string xPathQuery = $"/Employment_History/Employee[SNILS = '{targetValue}']";
+            XmlNodeList matchingEmployees = xmlDocument.SelectNodes(xPathQuery);
+            if (matchingEmployees.Count > 0)
+            {
+                lastEmployee = matchingEmployees[matchingEmployees.Count - 1];
 
-        //private void toolStripButton4_Click(object sender, EventArgs e)
-        //{
-        //    //DataView dataView = new DataView(dataTable);
-        //    //dataView.RowFilter = $"SNILS = '{textBox1.Text}'";
+                // Получение текстового содержимого поля
+                string lastEntries = lastEmployee.SelectSingleNode("Entries").InnerText.Trim();
 
-        //    //// Назначаем DataTable источником данных для DataGridView
-        //    //dataGridView1.DataSource = dataView;
-        //    //dataGridView1.Columns["SNILS"].Visible = false;
-        //    //dataGridView1.Columns["User"].Visible = false;
-        //    //dataGridView1.Columns["Pass"].Visible = false;
-        //    //dataGridView1.ReadOnly = true;
-        //}
+                // Разделение содержимого поля на слова
+                string[] words = lastEntries.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (words.Length > 0)
+                {
+                    if (words[0] == "Уволен" || words[0] == "уволен") return true;
+                }
+            }
+            
+            return false;
+        }
     }
 }
