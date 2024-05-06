@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
@@ -19,43 +20,61 @@ namespace Employment_history
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
 
-
             // Добавление обработчиков событий для мыши
-            this.MouseMove += Form1_MouseMove;
-            this.KeyPress += Form1_KeyPress;
-            this.MouseWheel += Form1_MouseWheel;
+            this.MouseMove += _MouseMove;
+            this.KeyPress += _KeyPress;
+            this.MouseWheel += _MouseWheel;
+            menuStrip1.MouseMove += _MouseMove;
+            menuStrip1.KeyPress += _KeyPress;
+            toolStripMenuItem1.MouseMove += _MouseMove;
+            toolStripMenuItem2.MouseMove += _MouseMove;
+            button1.MouseMove += _MouseMove;
+            button1.KeyPress += _KeyPress;
+            textBox1.MouseMove += _MouseMove;
+            textBox1.KeyPress += _KeyPress;
+            label1.MouseMove += _MouseMove;
+            label1.KeyPress += _KeyPress;
+
+            textBox1.Validating += _Validating;       // ??????
+            textBox2.Validating += _Validating;       // ??????
+            textBox3.Validating += _Validating;       // ??????
 
             // Добавление обработчиков событий для клавиатуры
             this.KeyPreview = true;
-            this.KeyDown += Form1_KeyDown;
+            this.KeyDown += _KeyDown;
         }
 
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void _MouseMove(object sender, MouseEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        private void _KeyPress(object sender, KeyPressEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void _KeyDown(object sender, KeyEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_MouseWheel(object sender, MouseEventArgs e)
+        private void _MouseWheel(object sender, MouseEventArgs e)
         {
             ResetInactivityTimer();
         }
+
+        private void _Validating(object sender, CancelEventArgs e)
+        {
+            ResetInactivityTimer();
+        }
+
 
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             //MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        // Метод для сброса таймера при активности пользователя
         private void ResetInactivityTimer()
         {
             inactivityTimer.Stop();
@@ -114,10 +133,12 @@ namespace Employment_history
 
                 this.Hide();
                 Form3 form3 = new Form3(snils);
-                form3.ShowDialog();
+                inactivityTimer.Stop();
+                form3.ShowDialog();                
 
                 form3.Close();
                 this.Show();
+                inactivityTimer.Start();
             }
             else
             {
@@ -182,8 +203,10 @@ namespace Employment_history
                 //MessageBox.Show("Вы успешно вошли в систему!", "Вход", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Hide();
                 Form2 form2 = new Form2();
+                inactivityTimer.Stop();
                 form2.ShowDialog();
                 form2.Close();
+                inactivityTimer.Start();
                 this.Show();
             }
             else

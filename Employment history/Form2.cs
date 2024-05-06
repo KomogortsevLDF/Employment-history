@@ -19,6 +19,7 @@ namespace Employment_history
         public Form2()
         {
             InitializeComponent();
+            this.FormClosing += _FormClosing;
 
             // Инициализация таймера
             inactivityTimer = new Timer();
@@ -28,38 +29,63 @@ namespace Employment_history
 
 
             // Добавление обработчиков событий для мыши
-            this.MouseMove += Form1_MouseMove;
-            this.KeyPress += Form1_KeyPress;
-            this.MouseWheel += Form1_MouseWheel;
+            this.MouseMove += _MouseMove;
+            this.KeyPress += _KeyPress;
+            this.MouseWheel += _MouseWheel;
+            dataGridView1.MouseMove += _MouseMove;
+            dataGridView1.KeyPress += _KeyPress;
+            menuStrip1.MouseMove += _MouseMove;
+            menuStrip1.KeyPress += _KeyPress;
+            bindingNavigator1.MouseMove += _MouseMove;
+            bindingNavigator1.KeyPress += _KeyPress;
+            panel1.MouseMove += _MouseMove;
+            panel1.KeyPress += _KeyPress;
+            button1.MouseMove += _MouseMove;
+            button1.KeyPress += _KeyPress;
+            textBox1.MouseMove += _MouseMove;
+            textBox1.KeyPress += _KeyPress;
+            label1.MouseMove += _MouseMove;
+            label1.KeyPress += _KeyPress;
+            toolStripMenuItem1.MouseMove += _MouseMove;
+            toolStripMenuItem2.MouseMove += _MouseMove;
+            toolStripMenuItem3.MouseMove += _MouseMove;
+            toolStripMenuItem4.MouseMove += _MouseMove;
+            toolStripMenuItem5.MouseMove += _MouseMove;
+            toolStripMenuItem6.MouseMove += _MouseMove;
+            toolStripMenuItem7.MouseMove += _MouseMove;
+            toolStripButton1.MouseMove += _MouseMove;
+            toolStripButton2.MouseMove += _MouseMove;
+            bindingNavigatorSeparator.MouseMove += _MouseMove;
+            bindingNavigatorSeparator1.MouseMove += _MouseMove;
 
             // Добавление обработчиков событий для клавиатуры
             this.KeyPreview = true;
-            this.KeyDown += Form1_KeyDown;
+            this.KeyDown += _KeyDown;
         }
 
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void _MouseMove(object sender, MouseEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        private void _KeyPress(object sender, KeyPressEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void _KeyDown(object sender, KeyEventArgs e)
         {
             ResetInactivityTimer();
         }
 
-        private void Form1_MouseWheel(object sender, MouseEventArgs e)
+        private void _MouseWheel(object sender, MouseEventArgs e)
         {
             ResetInactivityTimer();
         }
 
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
-            MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            this.Close();
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -186,6 +212,8 @@ namespace Employment_history
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             saveFileDialog.Title = "Save file as";
@@ -237,6 +265,8 @@ namespace Employment_history
                     }
                 }
             }
+
+            inactivityTimer.Start();
         }
 
         void MenuItem2_Support()
@@ -264,6 +294,8 @@ namespace Employment_history
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             if (!IsSnilsValid(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (!IsUserExist(textBox1.Text))
             {
@@ -282,6 +314,8 @@ namespace Employment_history
                 MenuItem2_Support();
             }
             else MessageBox.Show("Данный сотрудник уже числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            
+            inactivityTimer.Start();
         }
 
         private string SnilsUsername(string Snils)
@@ -365,6 +399,8 @@ namespace Employment_history
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             toolStripMenuItem3.Tag = "toolStripMenuItem3";
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (!FirstWordFired(DataFileName, textBox1.Text))
@@ -391,10 +427,14 @@ namespace Employment_history
                 row = null;
             }
             else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            inactivityTimer.Start();
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             if (IsUserExist(textBox1.Text))
             {
                 toolStripButton1.Enabled = true;
@@ -444,6 +484,8 @@ namespace Employment_history
                 row = null;
             }
             else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            inactivityTimer.Start();
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -468,6 +510,8 @@ namespace Employment_history
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
@@ -493,10 +537,14 @@ namespace Employment_history
                 row = null;
             }
             else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            inactivityTimer.Start();
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
+            inactivityTimer.Stop();
+
             if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (!FirstWordFired(DataFileName, textBox1.Text))
             {
@@ -522,6 +570,8 @@ namespace Employment_history
                 row = null;
             }
             else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            inactivityTimer.Start();
         }
 
         public bool FirstWordFired(string filePath, string targetValue)
@@ -551,6 +601,11 @@ namespace Employment_history
             }
             
             return false;
+        }
+
+        private void _FormClosing(object sender, FormClosingEventArgs e)
+        {
+            inactivityTimer.Stop();
         }
     }
 }
