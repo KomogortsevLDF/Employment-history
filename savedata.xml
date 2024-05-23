@@ -1,0 +1,512 @@
+<employees>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность арт-директора</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность web инженера</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность разработчика</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность менеджера</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность PR менеджера</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность аналитика</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность data аналитика</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность Редактора</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-дизайнера</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность аналитика данных</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность Frontend разработчика</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность Директора отдела</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность руководителя отдела</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Переведен на должность алалитика данных</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-дизайнера</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>06.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-консультанта</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>11.05.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>11.05.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>11.05.2023</date>
+    <entry>Принят в административный отдел на должность директора</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>11.05.2023</date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>11.05.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Принят в административный отдел на должность редактора</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>13.05.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>26.10.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>5</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>5</id_emp>
+    <date>26.10.2023</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>4</id_emp>
+    <date>26.10.2023</date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность администратора</entry>
+    <document>Приказ от 13.09.2004 №424 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2019 №5 - kf</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность арт-директора</entry>
+    <document>Приказ от 13.09.2021 №224 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность программиста</entry>
+    <document>Приказ от 13.09.2001 №334 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность аналитика данных</entry>
+    <document>Приказ от 13.09.2021 №164 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность технического писателя</entry>
+    <document>Приказ от 13.09.2021 №136 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность администратора серверов</entry>
+    <document>Приказ от 13.09.2009 №52 - kd</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2002 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность сетевого администратора</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>2</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность администратора данных</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность аналитика данных</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят на работу по совместительству на должность интернет-маркетолога</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Переведен на должность маркетолога</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>6</id_emp>
+    <date>27.10.2023 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>01.11.2023</date>
+    <entry>Переведен на должность дата аналитика</entry>
+    <document>Приказ от 13.09.2001 №134 j</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>01.11.2023</date>
+    <entry>Принят на работу по совместительству на должность разработчика</entry>
+    <document>Приказ от 13.09.2009 №5 - k</document>
+  </employee>
+  <employee>
+    <id_emp>3</id_emp>
+    <date>07.11.2023 </date>
+    <entry>Уволен по собственному желанию пункт 5 части 6 статьи 35 ТК РФ</entry>
+    <document>Приказ №16 от 08.01.2023</document>
+  </employee>
+  <employee>
+    <id_emp>7</id_emp>
+    <date>07.11.2023 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>03.04.2024</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>22.04.2024 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>22.04.2024 </date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>22.04.2024 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>22.04.2024 </date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>22.04.2024 </date>
+    <entry>Принят в административный отдел на должность секретаря</entry>
+    <document>Приказ от 13.09.2023 №4 - k</document>
+  </employee>
+  <employee>
+    <id_emp>1</id_emp>
+    <date>23.04.2024</date>
+    <entry>Уволен по собственному желанию пункт 3 части 1 статьи 77 ТК РФ</entry>
+    <document>Приказ №16 от 23.01.2018</document>
+  </employee>
+</employees>

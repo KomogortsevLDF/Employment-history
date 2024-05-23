@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
@@ -9,10 +10,14 @@ namespace Employment_history
     public partial class Form1 : Form
     {
         private Timer inactivityTimer;
+        private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
+
+        public string snils { get; set; }
+
         public Form1()
         {
             InitializeComponent();
-            button2.Visible = false;
+            //button2.Visible = false;
 
             // Инициализация таймера
             inactivityTimer = new Timer();
@@ -35,9 +40,9 @@ namespace Employment_history
             label1.MouseMove += _MouseMove;
             label1.KeyPress += _KeyPress;
 
-            textBox1.Validating += _Validating;       // ??????
-            textBox2.Validating += _Validating;       // ??????
-            textBox3.Validating += _Validating;       // ??????
+            textBox1.Validating += _Validating;
+            textBox2.Validating += _Validating;
+            textBox3.Validating += _Validating;
 
             // Добавление обработчиков событий для клавиатуры
             this.KeyPreview = true;
@@ -69,7 +74,6 @@ namespace Employment_history
             ResetInactivityTimer();
         }
 
-
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             //MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -81,23 +85,13 @@ namespace Employment_history
             inactivityTimer.Start();
         }
 
-        public string snils { get; set; }
-
-        private string DataFileName = "data.xml";
-        //private string filePath_user = "users.txt";
-        private string filePath_accountant = "accountants.txt";
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             button2.Visible = false;
             button1.Visible = true;
             textBox3.Visible = true;
             label2.Visible = true;
+            textBox4.Text = "Вы входите как сотрудник";
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -106,35 +100,27 @@ namespace Employment_history
             button1.Visible = false;
             textBox3.Visible = false;
             label2.Visible = false;
+            textBox4.Text = "Вы входите как кадровик";
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             textBox1.Text = "user1";
             textBox2.Text = "pass1";
-            textBox3.Text = "111-111-111 11";
+            textBox3.Text = "123-456-789 01";
 
             string username = textBox1.Text;
             string password = textBox2.Text;
             string SNILS = textBox3.Text;
 
             snils = SNILS;
-            // Проверяем, существует ли файл с данными пользователей
-            if (!File.Exists(DataFileName))
-            {
-                MessageBox.Show("Файл с данными не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
 
-            // Проверяем, правильно ли введен логин и пароль для файла data.xml (т.е. для верификации пользователя)
-            if (IsLoginValid(username, password, SNILS))
+            if (AuthenticateUser(username, password, SNILS))
             {
-                //MessageBox.Show("Вы успешно вошли в систему!", "Вход", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
                 this.Hide();
                 Form3 form3 = new Form3(snils);
                 inactivityTimer.Stop();
-                form3.ShowDialog();                
+                form3.ShowDialog();
 
                 form3.Close();
                 this.Show();
@@ -146,61 +132,15 @@ namespace Employment_history
             }
         }
 
-        private bool IsLoginValid(string username, string password, string SNILS)
-        {
-            // Читаем данные из файла и проверяем, существует ли пользователь с таким логином и паролем и снилсом
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(DataFileName);
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-            
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                if (employeeNode.SelectSingleNode("User").InnerText == username &&
-                    employeeNode.SelectSingleNode("Pass").InnerText == password &&
-                    employeeNode.SelectSingleNode("SNILS").InnerText == SNILS) 
-                { return true; }
-            }
-
-            return false;
-        }
-
-        private bool IsLoginValid(string username, string password)
-        {
-            using (StreamReader sr = new StreamReader(filePath_accountant))
-            {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    string[] parts = line.Split(':');
-                    if (parts[0] == username && parts[1] == password)
-                    {
-                        return true;
-                    }
-
-                }
-            }
-
-            return false;
-        }
-
         private void button2_Click(object sender, EventArgs e)
         {
-            textBox1.Text = "acc1";
-            textBox2.Text = "pass1";
+            textBox1.Text = "admin1";
+            textBox2.Text = "password1";
             string username = textBox1.Text;
             string password = textBox2.Text;
 
-            // Проверяем, существует ли файл с данными работодателей
-            if (!File.Exists(filePath_accountant))
+            if (AuthenticateAccounter(username, password))
             {
-                MessageBox.Show("Файл с данными работодателей не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Проверяем, правильно ли введен логин и пароль для файла accountants.txt (т.е. для верификации работодателя)
-            if (IsLoginValid(username, password))
-            {
-                //MessageBox.Show("Вы успешно вошли в систему!", "Вход", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Hide();
                 Form2 form2 = new Form2();
                 inactivityTimer.Stop();
@@ -211,7 +151,47 @@ namespace Employment_history
             }
             else
             {
-                MessageBox.Show("Неправильный логин или пароль", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Неправильный логин или пароль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBox4.Text = "Вы входите как сотрудник";
+        }
+
+        private bool AuthenticateUser(string login, string password, string snils)
+        {
+            using (var conn = new NpgsqlConnection(connectionStr))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM empinfo WHERE login = @login AND pass = @password AND snils = @snils", conn))
+                {
+                    cmd.Parameters.AddWithValue("login", login);
+                    cmd.Parameters.AddWithValue("password", password);
+                    cmd.Parameters.AddWithValue("snils", snils);
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+        }
+
+        private bool AuthenticateAccounter(string login, string password)
+        {
+            using (var conn = new NpgsqlConnection(connectionStr))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM admins WHERE username = @login AND password = @password", conn))
+                {
+                    cmd.Parameters.AddWithValue("login", login);
+                    cmd.Parameters.AddWithValue("password", password);
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
             }
         }
     }

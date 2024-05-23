@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using System.Xml.Linq;
+using Npgsql;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Employment_history
@@ -16,6 +18,12 @@ namespace Employment_history
     public partial class Form3 : Form
     {
         private Timer inactivityTimer;
+        private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
+        DataTable dataTable = new DataTable();
+        DataTable awardsTable = new DataTable();
+        private string snils;
+
+
         public Form3(string Snils)
         {
             snils = Snils;
@@ -24,7 +32,7 @@ namespace Employment_history
 
             // Инициализация таймера
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 4000;
+            inactivityTimer.Interval = 4000000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
 
@@ -82,100 +90,14 @@ namespace Employment_history
             inactivityTimer.Start();
         }
 
-
-        private string snils;
-
-        XmlDocument xmlDoc;
-        DataTable dataTable;
-
-        DataTable TableAwards;
-        DataSet AwardsSet;
-
         private void Form3_Load(object sender, EventArgs e)
         {
             toolStripButton1.Enabled = false;
             dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
-            // Создаем объект XmlDocument и загружаем в него XML-файл
-            xmlDoc = new XmlDocument();
-            xmlDoc.Load("data.xml");
-
-            // Выбираем все узлы "Employee"
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-
-            // Создаем объект DataTable и добавляем в него необходимые столбцы
-            dataTable = new DataTable();
-            dataTable.Columns.Add("User");
-            dataTable.Columns.Add("Pass");
-            dataTable.Columns.Add("SNILS");
-            dataTable.Columns.Add("Number");
-            dataTable.Columns.Add("Date");
-            dataTable.Columns.Add("Entries");
-            dataTable.Columns.Add("Document");
-
-            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                string user = employeeNode.SelectSingleNode("User").InnerText;
-                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
-                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
-                string number = employeeNode.SelectSingleNode("Number").InnerText;
-                string date = employeeNode.SelectSingleNode("Date").InnerText;
-                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
-                string document = employeeNode.SelectSingleNode("Document").InnerText;
-
-                dataTable.Rows.Add(user, pass, snils, number, date, entries, document);
-            }
-
-            DataView dataView = new DataView(dataTable);
-            dataView.RowFilter = $"SNILS = '{snils}'";
-
-            // Назначаем DataTable источником данных для DataGridView
-            dataGridView1.DataSource = dataView;
-            dataGridView1.Columns["SNILS"].Visible = false;
-            dataGridView1.Columns["User"].Visible = false;
-            dataGridView1.Columns["Pass"].Visible = false;
-            dataGridView1.ReadOnly = true;
-
-            dataGridView1.Columns["Number"].Width = 50;
-            dataGridView1.Columns["Date"].Width = 75;
-            dataGridView1.Columns["Number"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            dataGridView1.Columns["Date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-
-
-
-
-            XmlDocument xmlAwards = new XmlDocument();
-            TableAwards = new DataTable("Employee");
-            AwardsSet = new DataSet("Awards");
-            xmlAwards.Load("awards.xml");
-
-            employeeNodes = xmlAwards.SelectNodes("//Employee");
-
-            TableAwards.Columns.Add("User");
-            TableAwards.Columns.Add("Pass");
-            TableAwards.Columns.Add("SNILS");
-            TableAwards.Columns.Add("Number");
-            TableAwards.Columns.Add("Date");
-            TableAwards.Columns.Add("Entries");
-            TableAwards.Columns.Add("Document");
-
-            // Проходим по всем узлам "Employee" и добавляем данные в DataTable
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                string user = employeeNode.SelectSingleNode("User").InnerText;
-                string pass = employeeNode.SelectSingleNode("Pass").InnerText;
-                string snils = employeeNode.SelectSingleNode("SNILS").InnerText;
-                string number = employeeNode.SelectSingleNode("Number").InnerText;
-                string date = employeeNode.SelectSingleNode("Date").InnerText;
-                string entries = employeeNode.SelectSingleNode("Entries").InnerText;
-                string document = employeeNode.SelectSingleNode("Document").InnerText;
-
-                TableAwards.Rows.Add(user, pass, snils, number, date, entries, document);
-            }
-
-            AwardsSet.Tables.Add(TableAwards);
+            LoadData();
+            NumberRows();
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
@@ -185,6 +107,7 @@ namespace Employment_history
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
             saveFileDialog.Title = "Save file as";
+       
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 using (StreamWriter writer = new StreamWriter(saveFileDialog.FileName))
@@ -192,7 +115,7 @@ namespace Employment_history
                     // Определяем ширину столбца для выравнивания
                     int columnWidth = 15; int coeffWidth = columnWidth;
                     int len;
-                    int[] maxWidth = new int[7];
+                    int[] maxWidth = new int[4];
 
                     int count = 0;
                     //Определяем самые широкие строки
@@ -201,7 +124,7 @@ namespace Employment_history
                         count++;
                         if (count == dataGridView1.RowCount) continue;
 
-                        for (int i = 3; i < dataGridView1.Columns.Count; i++)
+                        for (int i = 0; i < dataGridView1.Columns.Count; i++)
                         {
                             len = row.Cells[i].Value.ToString().Length;
 
@@ -214,21 +137,36 @@ namespace Employment_history
                         maxWidth[i] += coeffWidth;
                     }
 
-                    //Запись заголовков столбцов
-                    string header = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
-                                    "\t{3," + maxWidth[6] + "}", dataGridView1.Columns[3].HeaderText,
-                                    dataGridView1.Columns[4].HeaderText, dataGridView1.Columns[5].HeaderText,
-                                    dataGridView1.Columns[6].HeaderText);
-                    writer.Write(header);
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("Номер ТК:                   " + textBox8.Text);
+                    sb.AppendLine("Фамилия:                    " + textBox1.Text);
+                    sb.AppendLine("Имя:                        " + textBox2.Text);
+                    sb.AppendLine("Отчество:                   " + textBox3.Text);
+                    sb.AppendLine("Дата рождения:              " + textBox4.Text);
+                    sb.AppendLine("Образование:                " + textBox5.Text);
+                    sb.AppendLine("Профессия, Специальность:   " + textBox6.Text);
+                    sb.AppendLine("Дата заполнения:            " + textBox7.Text);
+
+                    string formattedString = sb.ToString();
+                    writer.Write(formattedString);
                     writer.WriteLine();
 
+                    //Запись заголовков столбцов
+                    string header = String.Format("{0," + maxWidth[0] + "}\t{1," + maxWidth[1] + "}\t{2," + maxWidth[2] + "}" +
+                                    "\t{3," + maxWidth[3] + "}", dataGridView1.Columns[0].HeaderText,
+                                    dataGridView1.Columns[1].HeaderText, dataGridView1.Columns[2].HeaderText,
+                                    dataGridView1.Columns[3].HeaderText);
+                    int removedSpaces = header.Length - header.TrimStart().Length;
+                    writer.Write(header.TrimStart());
+                    writer.WriteLine();
+                    
                     //Запись строк
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        string value = String.Format("{0," + maxWidth[3] + "}\t{1," + maxWidth[4] + "}\t{2," + maxWidth[5] + "}" +
-                                       "\t{3," + maxWidth[6] + "}", row.Cells[3].Value, row.Cells[4].Value, row.Cells[5].Value,
-                                       row.Cells[6].Value);
-                        writer.Write(value);
+                        string value = String.Format("{0," + maxWidth[0] + "}\t{1," + maxWidth[1] + "}\t{2," + maxWidth[2] + "}" +
+                                       "\t{3," + maxWidth[3] + "}", row.Cells[0].Value, DateTime.Parse(row.Cells[1].Value
+                                       .ToString()).ToString("dd.MM.yyyy"), row.Cells[2].Value, row.Cells[3].Value);
+                        writer.Write(value.Substring(removedSpaces));
                         writer.WriteLine();
                     }
                 }
@@ -243,13 +181,9 @@ namespace Employment_history
             toolStripButton2.Enabled = true;
 
             DataView dataView = new DataView(dataTable);
-            dataView.RowFilter = $"SNILS = '{snils}'";
-
             dataGridView1.DataSource = dataView;
-            dataGridView1.Columns["SNILS"].Visible = false;
-            dataGridView1.Columns["User"].Visible = false;
-            dataGridView1.Columns["Pass"].Visible = false;
             dataGridView1.ReadOnly = true;
+            NumberRows();
         }
 
         private void toolStripButton2_Click(object sender, EventArgs e)
@@ -257,20 +191,118 @@ namespace Employment_history
             toolStripButton1.Enabled = true;
             toolStripButton2.Enabled = false;
 
-            DataView dataView = new DataView(TableAwards);
-            dataView.RowFilter = $"SNILS = '{snils}'";
-
-            // Назначаем DataTable источником данных для DataGridView
+            DataView dataView = new DataView(awardsTable);
             dataGridView1.DataSource = dataView;
-            dataGridView1.Columns["SNILS"].Visible = false;
-            dataGridView1.Columns["User"].Visible = false;
-            dataGridView1.Columns["Pass"].Visible = false;
             dataGridView1.ReadOnly = true;
+            NumberRows();
         }
 
         private void _FormClosing(object sender, FormClosingEventArgs e)
         {
-            //inactivityTimer.Stop();
+            Application.Exit();
+            inactivityTimer.Stop();
+        }
+
+        private void LoadData()
+        {
+            try
+            {
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
+                {
+                    connection.Open();
+
+                    int empId = GetEmployeeIdBySnils(connection);
+
+                    string sqlEntries = $"SELECT date, entry, document FROM entries where id_emp = {empId};"; // запрос
+                    string sqlAwards = $"SELECT date, entry, document FROM awards where id_emp = {empId};";
+                    string sqlEmpinfo = $"SELECT tk_number, name, date_birth, education, profession, date_registration" +
+                        $" FROM empinfo where id = {empId};"; ;
+
+                    using (NpgsqlCommand commandEmpifno = new NpgsqlCommand(sqlEmpinfo, connection))
+                    using (NpgsqlCommand commandEntries = new NpgsqlCommand(sqlEntries, connection))
+                    using (NpgsqlCommand commandAwards = new NpgsqlCommand(sqlAwards, connection))
+                    {
+                        NpgsqlDataAdapter adapterEntries = new NpgsqlDataAdapter(commandEntries);
+                        NpgsqlDataAdapter adapterAwards = new NpgsqlDataAdapter(commandAwards);
+
+                        adapterEntries.Fill(dataTable);
+                        adapterAwards.Fill(awardsTable);
+
+                        DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn();
+                        idColumn.Name = "id";
+                        dataGridView1.Columns.Add(idColumn);
+
+                        dataGridView1.DataSource = dataTable;
+                        dataGridView1.ReadOnly = true;
+                        dataGridView1.RowHeadersVisible = false;
+
+                        dataGridView1.Columns["id"].Width = 100;
+                        dataGridView1.Columns["date"].Width = 100;
+                        dataGridView1.Columns["id"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        dataGridView1.Columns["date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+
+                        dataGridView1.Columns["id"].Resizable = DataGridViewTriState.False;
+                        dataGridView1.Columns["date"].Resizable = DataGridViewTriState.False;
+
+
+                        dataGridView1.Columns["id"].HeaderText = "№ записи";
+                        dataGridView1.Columns["date"].HeaderText = "Дата";
+                        dataGridView1.Columns["entry"].HeaderText = "Сведения";
+                        dataGridView1.Columns["document"].HeaderText = "Документ";
+
+                        foreach (DataGridViewColumn column in dataGridView1.Columns)
+                        {
+                            column.SortMode = DataGridViewColumnSortMode.NotSortable;
+                        }
+
+                        using (var reader = commandEmpifno.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string[] separatedName = reader["name"].ToString().Split(' ');
+                                textBox8.Text = "№ " + reader["tk_number"].ToString().TrimEnd();
+                                textBox1.Text = separatedName[0];
+                                textBox2.Text = separatedName[1];
+                                textBox3.Text = separatedName[2];
+                                textBox4.Text = DateTime.Parse(reader["date_birth"].ToString()).ToString("dd.MM.yyyy");
+                                textBox5.Text = reader["education"].ToString();
+                                textBox6.Text = reader["profession"].ToString();
+                                textBox7.Text = DateTime.Parse(reader["date_registration"].ToString()).ToString("dd.MM.yyyy");
+                            }
+                        }
+                     
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+        }
+
+        private void NumberRows()
+        {
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            {
+                dataGridView1.Rows[i].Cells["id"].Value = (i + 1).ToString();
+            }
+        }
+
+        int GetEmployeeIdBySnils(NpgsqlConnection conn)
+        {
+            using (var cmd = new NpgsqlCommand("SELECT id FROM empinfo WHERE snils = @snils", conn))
+            {
+                cmd.Parameters.AddWithValue("snils", snils);
+                var result = cmd.ExecuteScalar();
+                if (result != null)
+                {
+                    return Convert.ToInt32(result);
+                }
+                else
+                {
+                    return -1; // Возвращаем -1 если сотрудник не найден
+                }
+            }
         }
 
     }
