@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Linq;
 using Npgsql;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Employment_history
 {
     public partial class Form3 : Form
     {
         private Timer inactivityTimer;
+        private Timer WarningTimer;
         private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
         DataTable dataTable = new DataTable();
         DataTable awardsTable = new DataTable();
@@ -30,11 +23,16 @@ namespace Employment_history
             InitializeComponent();
             this.FormClosing += _FormClosing;
 
-            // Инициализация таймера
+            // Инициализация таймеров
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 4000000;
+            inactivityTimer.Interval = 5 * 60 * 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
+
+            WarningTimer = new Timer();
+            WarningTimer.Interval = 1 * 60 * 1000;
+            WarningTimer.Tick += WarningTimer_Tick;
+            WarningTimer.Start();
 
 
             // Добавление обработчиков событий для мыши
@@ -81,6 +79,13 @@ namespace Employment_history
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             this.Close();
+        }        
+        
+        private void WarningTimer_Tick(object sender, EventArgs e)
+        {
+            MessageBox.Show($"Обнаружено бездействие\n" +
+                $"Пользователь будет разлогирован через {WarningTimer.Interval/1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -88,6 +93,9 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
             inactivityTimer.Start();
+
+            WarningTimer.Stop();
+            WarningTimer.Start();
         }
 
         private void Form3_Load(object sender, EventArgs e)
@@ -199,8 +207,8 @@ namespace Employment_history
 
         private void _FormClosing(object sender, FormClosingEventArgs e)
         {
-            Application.Exit();
             inactivityTimer.Stop();
+            WarningTimer.Stop();
         }
 
         private void LoadData()
@@ -216,7 +224,7 @@ namespace Employment_history
                     string sqlEntries = $"SELECT date, entry, document FROM entries where id_emp = {empId};"; // запрос
                     string sqlAwards = $"SELECT date, entry, document FROM awards where id_emp = {empId};";
                     string sqlEmpinfo = $"SELECT tk_number, name, date_birth, education, profession, date_registration" +
-                        $" FROM empinfo where id = {empId};"; ;
+                        $" FROM empinfo where id = {empId};";
 
                     using (NpgsqlCommand commandEmpifno = new NpgsqlCommand(sqlEmpinfo, connection))
                     using (NpgsqlCommand commandEntries = new NpgsqlCommand(sqlEntries, connection))

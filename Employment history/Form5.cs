@@ -1,31 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Employment_history
 {
     public partial class Form5 : Form
     {
         private Timer inactivityTimer;
+        private Timer WarningTimer;
         public Form5(string sender)
         {
             Form5_Sender = sender;
             InitializeComponent();
             this.FormClosing += _FormClosing;
 
-            // Инициализация таймера
+            // Инициализация таймеров
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 4000;
+            inactivityTimer.Interval = 5 * 60 * 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
+
+            WarningTimer = new Timer();
+            WarningTimer.Interval = 1 * 60 * 1000;
+            WarningTimer.Tick += WarningTimer_Tick;
+            WarningTimer.Start();
 
             // Добавление обработчиков событий для мыши
             this.MouseMove += _MouseMove;
@@ -77,25 +74,35 @@ namespace Employment_history
             this.Close();
         }
 
+        private void WarningTimer_Tick(object sender, EventArgs e)
+        {
+            MessageBox.Show($"Обнаружено бездействие\n" +
+                $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+        }
+
         // Метод для сброса таймера при активности пользователя
         private void ResetInactivityTimer()
         {
             inactivityTimer.Stop();
             inactivityTimer.Start();
+
+            WarningTimer.Stop();
+            WarningTimer.Start();
         }
 
 
         private string Form5_Sender;
         private void Form5_Load(object sender, EventArgs e)
         {
-            textBox3.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 8);
+            textBox3.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 8).Trim();
             
             if (Form5_Sender == "toolStripMenuItem2")
             {
                 textBox4.Text = "Принят в административный отдел на должность секретаря";
                 textBox5.Text = "Приказ от 13.09.2023 №4 - k";
             }
-            if (Form5_Sender == "toolStripMenuItem3")
+            else if (Form5_Sender == "toolStripMenuItem3")
             {
                 textBox4.Text = "Переведен на должность маркетолога";
                 textBox5.Text = "Приказ от 13.09.2001 №134 j";
@@ -121,7 +128,19 @@ namespace Employment_history
         {
             Form2 form2 = this.Owner as Form2;
             // Создаем массив строк со значениями из TextBox
-            string[] row = new string[] { "0", "0", "", "", textBox3.Text, textBox4.Text, textBox5.Text };
+            string[] row = new string[] { textBox3.Text.Trim(), textBox4.Text.Trim(), textBox5.Text.Trim() };
+
+            DateTime dateValue = new DateTime(2024, 5, 25);
+            try
+            {
+                dateValue = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+            }
+            catch
+            {
+                MessageBox.Show("Формат даты введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             form2.row = row;
 
             this.Close();
@@ -130,6 +149,7 @@ namespace Employment_history
         private void _FormClosing(object sender, FormClosingEventArgs e)
         {
             inactivityTimer.Stop();
+            WarningTimer.Stop();
         }
     }
 }

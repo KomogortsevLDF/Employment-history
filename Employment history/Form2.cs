@@ -1,27 +1,21 @@
 ﻿using Npgsql;
 using System;
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using System.Xml;
-using System.Xml.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Employment_history
 {
     public partial class Form2 : Form
     {
         private Timer inactivityTimer;
+        private Timer WarningTimer;
         private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
         private DataTable dataTable = new DataTable();
         private DataTable awardsTable = new DataTable();
         private string prevSnils = " ";
-        private string DataFileName = "data.xml";
 
         public string[] row { get; set; }
         
@@ -30,11 +24,16 @@ namespace Employment_history
             InitializeComponent();
             this.FormClosing += _FormClosing;
 
-            // Инициализация таймера
+            // Инициализация таймеров
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 40000000;
+            inactivityTimer.Interval = 5 * 60 * 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
+
+            WarningTimer = new Timer();
+            WarningTimer.Interval = 1 * 60 * 1000;
+            WarningTimer.Tick += WarningTimer_Tick;
+            WarningTimer.Start();
 
 
             // Добавление обработчиков событий для мыши
@@ -97,11 +96,21 @@ namespace Employment_history
             this.Close();
         }
 
+        private void WarningTimer_Tick(object sender, EventArgs e)
+        {
+            MessageBox.Show($"Обнаружено бездействие\n" +
+                $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+        }
+
         // Метод для сброса таймера при активности пользователя
         private void ResetInactivityTimer()
         {
             inactivityTimer.Stop();
             inactivityTimer.Start();
+
+            WarningTimer.Stop();
+            WarningTimer.Start();
         }
 
         private void Form2_Load(object sender, EventArgs e)
@@ -143,6 +152,12 @@ namespace Employment_history
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
 
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
@@ -160,7 +175,7 @@ namespace Employment_history
                     string sqlEntries = $"SELECT date, entry, document FROM entries where id_emp = {empId};"; // запрос
                     string sqlAwards = $"SELECT date, entry, document FROM awards where id_emp = {empId};";
                     string sqlEmpinfo = $"SELECT tk_number, name, date_birth, education, profession, date_registration" +
-                        $" FROM empinfo where id = {empId};"; ;
+                        $" FROM empinfo where id = {empId};";
 
                     using (NpgsqlCommand commandEmpifno = new NpgsqlCommand(sqlEmpinfo, connection))
                     using (NpgsqlCommand commandEntries = new NpgsqlCommand(sqlEntries, connection))
@@ -170,10 +185,8 @@ namespace Employment_history
                         NpgsqlDataAdapter adapterAwards = new NpgsqlDataAdapter(commandAwards);
 
                         DataView dataview = new DataView(null);
-                        //if (dataGridView1.Rows.Count != 0 ) { dataGridView1.Rows.Clear(); }
                         dataTable.Rows.Clear();
-                        awardsTable.Rows.Clear();   
-                        //dataGridView1.DataSource = dataTable;
+                        awardsTable.Rows.Clear();
                         adapterEntries.Fill(dataTable);
                         adapterAwards.Fill(awardsTable);
 
@@ -223,17 +236,17 @@ namespace Employment_history
             }
 
             NumberRows();
-            //string filterValue = textBox1.Text;
-            //DataView dataView = new DataView(dataTable);
-            //dataView.RowFilter = $"SNILS = '{filterValue}'";
-            //dataGridView1.DataSource = dataView;
 
-            //if (!IsSnilsValid(textBox1.Text))
-            //{
-            //    MessageBox.Show("СНИЛС сотрудника введен неверно",
-            //        "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //}
+            if (!IsSnilsValid(textBox1.Text))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно",
+                    "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+
         }
+
+
 
         private void NumberRows()
         {
@@ -324,106 +337,101 @@ namespace Employment_history
             inactivityTimer.Start();
         }
 
-        void MenuItem2_Support()
+        void InsertIntoDB(object sender)
         {
             if (row == null) return;
-            else if (row[0] == "" || row[1] == "" || row[4] == "" || row[5] == "" || row[6] == "")
-            {
-                MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
             else
             {
-                if (row[0] == "0") row[0] = SnilsUsername(textBox1.Text);
-                if (row[1] == "0") row[1] = SnilsPassword(textBox1.Text);
-                row[2] = textBox1.Text;
-                row[3] = NextNumber(textBox1.Text, DataFileName);
-                dataTable.Rows.Add(row);
+                DateTime dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
+                DateTime dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+                DateTime dateValue = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
 
-                //dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
+                {
+                    connection.Open();
+                    if (row.Length > 5)
+                    {
+                        string sqlEmp = "INSERT INTO empinfo (tk_number, name, date_birth, education, profession, date_registration, " +
+                            "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
+                            " @login, @pass, @snils);";
+
+                        using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
+                        {
+                            command.Parameters.AddWithValue("@tk_number", GetTkNumber(connection)); // function
+                            command.Parameters.AddWithValue("@name", row[3]);
+                            command.Parameters.AddWithValue("@date_birth", dateBirth);
+                            command.Parameters.AddWithValue("@education", row[5]);
+                            command.Parameters.AddWithValue("@profession", row[6]);
+                            command.Parameters.AddWithValue("@date_registration", dateReg);
+                            command.Parameters.AddWithValue("@login", row[8]);
+                            command.Parameters.AddWithValue("@pass", row[9]);
+                            command.Parameters.AddWithValue("@snils", textBox1.Text.Trim());
+
+                            int rowsAffected = command.ExecuteNonQuery();
+                            if (rowsAffected > 0) { MessageBox.Show("Done!"); }
+                            // rowsAffected содержит количество добавленных строк (должно быть 1, если вставка прошла успешно)
+                        }
+
+                    }
+                    string sqlEntr = "INSERT INTO entries (id_emp, date, entry, document) VALUES (@id_emp, @date, @entry, @document);";
+
+                    if (sender == toolStripMenuItem5)
+                    sqlEntr = "INSERT INTO awards (id_emp, date, entry, document) VALUES (@id_emp, @date, @entry, @document);";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(sqlEntr, connection))
+                    {
+                        command.Parameters.AddWithValue("@id_emp", GetEmployeeIdBySnils(connection, textBox1.Text.Trim()));
+                        command.Parameters.AddWithValue("@date", dateValue);
+                        command.Parameters.AddWithValue("@entry", row[1]);
+                        command.Parameters.AddWithValue("@document", row[2]);
+
+                        int rowsAffected = command.ExecuteNonQuery();
+                        //if (rowsAffected > 0) { MessageBox.Show("Done!"); }
+                    }
+                }
             }
 
             row = null;
-
             return;
+        }
+
+        private string GetTkNumber(NpgsqlConnection connection)
+        { 
+            string sql = $"select tk_number from empinfo order by id desc limit 1;";
+            using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
+            {
+                object result = cmd.ExecuteScalar();
+                string number = "1111111"; // В БД нет ни одного сотрудника
+                if (result != null) { number = (int.Parse(result.ToString()) + 1).ToString("D7"); }
+
+                return number;
+            }
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
 
-            if (!IsSnilsValid(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!IsUserExist(textBox1.Text))
+            if (!IsSnilsValid(textBox1.Text.Trim())) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!IsUserExist(textBox1.Text.Trim()))
             {
                 Form4 form4 = new Form4();
                 form4.Owner = this;
                 form4.ShowDialog();
 
-                MenuItem2_Support();
+                InsertIntoDB(sender);
             }
-            else if (FirstWordFired(DataFileName, textBox1.Text))
+            else if (FirstWordFired(textBox1.Text.Trim()))
             {
                 Form5 form5 = new Form5("toolStripMenuItem2");
                 form5.Owner = this;
                 form5.ShowDialog();
 
-                MenuItem2_Support();
+                InsertIntoDB(sender);
             }
-            else MessageBox.Show("Данный сотрудник уже числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show("Данный сотрудник уже числится в базе данных", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             
             inactivityTimer.Start();
-        }
-
-        private string SnilsUsername(string Snils)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(DataFileName);
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                if (employeeNode.SelectSingleNode("SNILS").InnerText == Snils)
-                {
-                    return employeeNode.SelectSingleNode("User").InnerText;
-                }
-            }
-
-            return null;
-        }
-
-        private string SnilsPassword(string Snils)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(DataFileName);
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                if (employeeNode.SelectSingleNode("SNILS").InnerText == Snils)
-                {
-                    return employeeNode.SelectSingleNode("Pass").InnerText;
-                }
-            }
-
-            return null;
-        }
-
-        private string NextNumber(string Snils, string filename)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(filename);
-
-            // Выбираем все узлы "Employee"
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-            int count = 0;
-            foreach (XmlNode employeeNode in employeeNodes)
-            {
-                if (employeeNode.SelectSingleNode("SNILS").InnerText == Snils)
-                {
-                    count++;
-                }
-            }
-
-            return (count+1).ToString();    
         }
 
         private bool IsSnilsValid(string input)
@@ -436,52 +444,46 @@ namespace Employment_history
             return regex.IsMatch(input);
         }
 
-
         private bool IsUserExist(string SNILS)
         {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(DataFileName);
-            XmlNodeList employeeNodes = xmlDoc.SelectNodes("//Employee");
-
-            foreach (XmlNode employeeNode in employeeNodes)
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
             {
-                if (employeeNode.SelectSingleNode("SNILS").InnerText == SNILS)
-                { return true; }
+                connection.Open();
+                using (NpgsqlCommand cmd = new NpgsqlCommand("SELECT id FROM empinfo WHERE snils = @snils", connection))
+                {
+                    cmd.Parameters.AddWithValue("snils", SNILS);
+                    var result = cmd.ExecuteScalar();
+                    if (Convert.ToInt32(result) > 0) { return  true; }
+                    else { return false; }
+                }
             }
-
-            return false;
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
 
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             toolStripMenuItem3.Tag = "toolStripMenuItem3";
-            if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!FirstWordFired(DataFileName, textBox1.Text))
+            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!FirstWordFired(textBox1.Text.Trim()))
             {
                 Form5 form5 = new Form5("toolStripMenuItem3");
                 form5.Owner = this;
                 form5.ShowDialog();
 
                 if (row == null) return;
-                else if (row[4] == "" || row[5] == "" || row[6] == "")
-                {
-                    MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    row = null;
-                    return;
-                }
 
-                row[0] = SnilsUsername(textBox1.Text);
-                row[1] = SnilsPassword(textBox1.Text);
-                row[2] = textBox1.Text;
-                row[3] = NextNumber(textBox1.Text, DataFileName);
-                dataTable.Rows.Add(row);
+                InsertIntoDB(sender);
 
-                //dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             inactivityTimer.Start();
         }
@@ -490,7 +492,13 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
 
-            if (IsUserExist(textBox1.Text))
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (IsUserExist(textBox1.Text.Trim()))
             {
                 toolStripButton1.Enabled = true;
                 toolStripButton2.Enabled = false;
@@ -501,44 +509,20 @@ namespace Employment_history
                 toolStripButton2.Enabled = true;
             }
 
-            string AwardsFilename = "awards.xml";
-
-            //DataView dataView = new DataView(TableAwards);
-            //dataView.RowFilter = $"SNILS = '{textBox1.Text}'";
-
-            // Назначаем DataTable источником данных для DataGridView
-            //dataGridView1.DataSource = dataView;
-            //dataGridView1.Columns["SNILS"].Visible = false;
-            //dataGridView1.Columns["User"].Visible = false;
-            //dataGridView1.Columns["Pass"].Visible = false;
-            //dataGridView1.ReadOnly = true;
-
-            if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (sender == toolStripButton2) { }
-            else if (!FirstWordFired(DataFileName, textBox1.Text))
+            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!FirstWordFired(textBox1.Text.Trim()))
             {
                 Form5 form5 = new Form5("toolStripMenuItem5");
                 form5.Owner = this;
                 form5.ShowDialog();
 
                 if (row == null) return;
-                else if (row[4] == "" || row[5] == "" || row[6] == "")
-                {
-                    MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    row = null;
-                    return;
-                }
 
-                row[0] = SnilsUsername(textBox1.Text);
-                row[1] = SnilsPassword(textBox1.Text);
-                row[2] = textBox1.Text;
-                row[3] = NextNumber(textBox1.Text, AwardsFilename);
-                //TableAwards.Rows.Add(row);
+                InsertIntoDB(sender);
 
-                //AwardsSet.WriteXml(AwardsFilename, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             inactivityTimer.Start();
         }
@@ -569,31 +553,26 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
 
-            if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!FirstWordFired(DataFileName, textBox1.Text))
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!FirstWordFired(textBox1.Text.Trim()))
             {
                 Form5 form5 = new Form5("toolStripMenuItem4");
                 form5.Owner = this;
                 form5.ShowDialog();
 
                 if (row == null) return;
-                else if (row[4] == "" || row[5] == "" || row[6] == "")
-                {
-                    MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    row = null;
-                    return;
-                }
 
-                row[0] = SnilsUsername(textBox1.Text);
-                row[1] = SnilsPassword(textBox1.Text);
-                row[2] = textBox1.Text;
-                row[3] = NextNumber(textBox1.Text, DataFileName);
-                dataTable.Rows.Add(row);
+                InsertIntoDB(sender);
 
-                //dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             inactivityTimer.Start();
         }
@@ -602,69 +581,54 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
 
-            if (!IsUserExist(textBox1.Text)) MessageBox.Show("СНИЛС сотрудника введен неверно (Данный сотрудник не числится в базе ПФР)", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!FirstWordFired(DataFileName, textBox1.Text))
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!FirstWordFired(textBox1.Text.Trim()))
             {
                 Form5 form5 = new Form5("toolStripMenuItem6");
                 form5.Owner = this;
                 form5.ShowDialog();
 
                 if (row == null) return;
-                else if (row[4] == "" || row[5] == "" || row[6] == "")
-                {
-                    MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    row = null;
-                    return;
-                }
 
-                row[0] = SnilsUsername(textBox1.Text);
-                row[1] = SnilsPassword(textBox1.Text);
-                row[2] = textBox1.Text;
-                row[3] = NextNumber(textBox1.Text, DataFileName);
-                dataTable.Rows.Add(row);
+                InsertIntoDB(sender);
 
-                //dataSet.WriteXml(DataFileName, XmlWriteMode.IgnoreSchema);
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник уже НЕ числится в базе ПФР", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             inactivityTimer.Start();
         }
 
-        public bool FirstWordFired(string filePath, string targetValue)
+        public bool FirstWordFired(string targetValue)
         {
-            // Загрузка XML-файла
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.Load(filePath);
-
-            XmlNode lastEmployee = null;
-
-            string xPathQuery = $"/Employment_History/Employee[SNILS = '{targetValue}']";
-            XmlNodeList matchingEmployees = xmlDocument.SelectNodes(xPathQuery);
-            if (matchingEmployees.Count > 0)
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
             {
-                lastEmployee = matchingEmployees[matchingEmployees.Count - 1];
-
-                // Получение текстового содержимого поля
-                string lastEntries = lastEmployee.SelectSingleNode("Entries").InnerText.Trim();
-
-                // Разделение содержимого поля на слова
-                string[] words = lastEntries.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                if (words.Length > 0)
+                connection.Open();
+                int empId = GetEmployeeIdBySnils(connection, targetValue);
+                string sql = $"select entry from entries where id_emp = {empId} order by id desc limit 1;";
+                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
                 {
-                    if (words[0] == "Уволен" || words[0] == "уволен") return true;
+                    object result = cmd.ExecuteScalar();
+                    if (result != null)
+                    {
+                        string entry = result.ToString();
+                        if (entry.StartsWith("Уволен", StringComparison.OrdinalIgnoreCase)) { return true; }
+                    }
                 }
+                return false;
             }
-            
-            return false;
         }
 
         private void _FormClosing(object sender, FormClosingEventArgs e)
         {
             inactivityTimer.Stop();
-            Application.Exit();
+            WarningTimer.Stop();
         }
-
     }
 }
