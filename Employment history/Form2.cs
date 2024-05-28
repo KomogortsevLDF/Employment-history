@@ -15,12 +15,16 @@ namespace Employment_history
         private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
         private DataTable dataTable = new DataTable();
         private DataTable awardsTable = new DataTable();
-        private string prevSnils = " ";
+        private string prevSnils = " ", username;
+        Logger logger;
 
         public string[] row { get; set; }
         
-        public Form2()
+        public Form2(string _username, Logger _logger)
         {
+            logger = _logger;
+            username = _username; 
+
             InitializeComponent();
             this.FormClosing += _FormClosing;
 
@@ -415,7 +419,7 @@ namespace Employment_history
             if (!IsSnilsValid(textBox1.Text.Trim())) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (!IsUserExist(textBox1.Text.Trim()))
             {
-                Form4 form4 = new Form4();
+                Form4 form4 = new Form4(username, logger);
                 form4.Owner = this;
                 form4.ShowDialog();
 
@@ -629,6 +633,11 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
             WarningTimer.Stop();
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

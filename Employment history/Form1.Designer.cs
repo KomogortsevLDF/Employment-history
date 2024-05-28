@@ -65,7 +65,7 @@
             this.toolStripMenuItem2,
             this.toolStripMenuItem3});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(170, 26);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(170, 24);
             this.toolStripMenuItem1.Text = "Выбор пользователя";
             // 
             // toolStripMenuItem2
@@ -100,9 +100,11 @@
             // textBox3
             // 
             this.textBox3.Location = new System.Drawing.Point(155, 205);
+            this.textBox3.MaxLength = 14;
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(185, 22);
             this.textBox3.TabIndex = 3;
+            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
             // 
             // button1
             // 
@@ -186,13 +188,13 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button2);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.button2);
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.Name = "Form1";

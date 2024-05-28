@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Employment_history
@@ -9,11 +10,20 @@ namespace Employment_history
         private Timer inactivityTimer;
         private Timer WarningTimer;
         private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
+        private SecurityManager securityManager;
+        private Logger logger;
+        private string username;
 
-        public Form4()
+        public Form4(string _username, Logger _logger)
         {
+            logger = _logger;
+            username = _username;
+
             InitializeComponent();
             this.FormClosing += _FormClosing;
+
+            securityManager = new SecurityManager();
+            logger = new Logger("log.txt");
 
             // Инициализация таймеров
             inactivityTimer = new Timer();
@@ -77,6 +87,7 @@ namespace Employment_history
         {
             ResetInactivityTimer();
         }
+
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             Form2 form2 = this.Owner as Form2;
@@ -88,7 +99,6 @@ namespace Employment_history
         {
             MessageBox.Show($"Обнаружено бездействие\n" +
                 $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -103,8 +113,8 @@ namespace Employment_history
 
         private void Form4_Load(object sender, EventArgs e)
         {
-            textBox5.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 8).Trim();
-            textBox9.Text = DateTime.Now.ToString().Substring(0, DateTime.Now.ToString().Length - 8).Trim();
+            textBox5.Text = DateTime.Now.ToString("dd.MM.yyyy");
+            textBox9.Text = DateTime.Now.ToString("dd.MM.yyyy");
             textBox10.Text = "Принят в административный отдел на должность секретаря";
             textBox11.Text = "Приказ от 13.09.2023 №4 - k";
         }
@@ -112,20 +122,28 @@ namespace Employment_history
         private void button1_Click(object sender, EventArgs e)
         {
             // Создаем массив строк со значениями из TextBox
-            string[] row = new string[] { textBox9.Text.Trim(), textBox10.Text.Trim(), textBox11.Text.Trim(), textBox1.Text.Trim(),
-                            textBox2.Text.Trim(), textBox3.Text.Trim(), textBox4.Text.Trim(), textBox5.Text.Trim(), textBox6.Text.Trim()
-                            , textBox7.Text.Trim()};
+            string[] row = new string[]
+            {
+                textBox9.Text.Trim(),
+                textBox10.Text.Trim(),
+                textBox11.Text.Trim(),
+                textBox1.Text.Trim(),
+                textBox2.Text.Trim(),
+                textBox3.Text.Trim(),
+                textBox4.Text.Trim(),
+                textBox5.Text.Trim(),
+                textBox6.Text.Trim(),
+                textBox7.Text.Trim()
+            };
 
-            if (row[0] == "" || row[1] == "" || row[2] == "" || row[3] == "" || row[4] == "" || row[5] == "" || row[6] == ""
-                 || row[7] == "" || row[8] == "" || row[9] == "")
+            if (row.Any(field => string.IsNullOrEmpty(field)))
             {
                 MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "Ошибка регистрации", "Некоторые поля не заполнены");
                 return;
             }
 
-            DateTime dateBirth = new DateTime(2024, 5, 25),
-                     dateReg = new DateTime(2024, 5, 25),
-                     dateValue = new DateTime(2024, 5, 25);
+            DateTime dateBirth, dateReg, dateValue;
             try
             {
                 dateValue = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
@@ -138,17 +156,33 @@ namespace Employment_history
                 return;
             }
 
+            if (!securityManager.ValidateLogin(textBox6.Text.Trim()))
+            {
+                MessageBox.Show("Логин должен содержать не менее 8 символов!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "Ошибка регистрации", "Логин не соответствует требованиям");
+                return;
+            }
+
+            if (!securityManager.ValidatePassword(textBox7.Text.Trim()))
+            {
+                MessageBox.Show("Пароль должен содержать не менее 8 символов, включать заглавные и строчные буквы, цифры и специальные символы!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "Ошибка регистрации", "Пароль не соответствует требованиям");
+                return;
+            }
+
             if (textBox7.Text.Trim() != textBox8.Text.Trim())
             {
                 MessageBox.Show("Пароли не совпадают!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "Ошибка регистрации", "Пароли не совпадают");
                 return;
             }
+
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
             {
                 connection.Open();
                 bool isFindL = false;
                 bool isFindP = false;
-                string sql = $"SELECT login, pass FROM empinfo ;";
+                string sql = "SELECT login, pass FROM empinfo;";
 
                 using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
                 {
@@ -156,17 +190,17 @@ namespace Employment_history
                     {
                         while (reader.Read())
                         {
-                            string valueL = reader["login"].ToString(); // Получаем значение из первого столбца текущей строки
+                            string valueL = reader["login"].ToString();
                             if (valueL == textBox6.Text.Trim())
                             {
-                                isFindL = true; // Если найдено совпадение, устанавливаем флаг в false
-                                break; // Прерываем цикл, так как совпадение найдено
+                                isFindL = true;
+                                break;
                             }
-                            string valueP = reader["pass"].ToString(); // Получаем значение из первого столбца текущей строки
+                            string valueP = reader["pass"].ToString();
                             if (valueP == textBox7.Text.Trim())
                             {
-                                isFindP = true; // Если найдено совпадение, устанавливаем флаг в false
-                                break; // Прерываем цикл, так как совпадение найдено
+                                isFindP = true;
+                                break;
                             }
                         }
                     }
@@ -175,18 +209,20 @@ namespace Employment_history
                 if (isFindL)
                 {
                     MessageBox.Show("Сотрудник с таким логином уже существует!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    logger.LogEvent(username, "Ошибка регистрации", "Логин уже существует");
                     return;
                 }
                 else if (isFindP)
                 {
                     MessageBox.Show("Сотрудник с таким паролем уже существует!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    logger.LogEvent(username, "Ошибка регистрации", "Пароль уже существует");
                     return;
                 }
             }
 
             Form2 form2 = this.Owner as Form2;
             form2.row = row;
-
+            logger.LogEvent(username, "Успешная регистрация", "Пользователь успешно зарегистрирован");
             this.Close();
         }
 
@@ -195,5 +231,6 @@ namespace Employment_history
             inactivityTimer.Stop();
             WarningTimer.Stop();
         }
+
     }
 }

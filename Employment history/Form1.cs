@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
@@ -16,8 +17,6 @@ namespace Employment_history
         private int maxAttempt = 3;
         private static int lockDurationSeconds = 300;
 
-
-
         private DateTime breakeTime = new DateTime(1952, 5, 11, 22, 51, 0);
         private static DateTime lockTime = new DateTime(1952, 5, 11, 22, 51, 0);
         int attempt = 0;
@@ -25,11 +24,15 @@ namespace Employment_history
 
         public string snils { get; set; }
 
+        private Logger logger;
+
         public Form1()
         {
             InitializeComponent();
             button2.Visible = false;
             this.FormClosing += _FormClosing;
+
+            logger = new Logger("eventlog.txt"); // Инициализация Logger с указанием пути к файлу логов
 
             // Инициализация таймера
             inactivityTimer = new System.Windows.Forms.Timer();
@@ -122,9 +125,6 @@ namespace Employment_history
                 UserLocked();
                 return;
             }
-            //textBox1.Text = "user1";
-            //textBox2.Text = "pass1";
-            //textBox3.Text = "123-456-789 01";
 
             string username = textBox1.Text;
             string password = textBox2.Text;
@@ -134,6 +134,7 @@ namespace Employment_history
 
             if (AuthenticateUser(username, password, SNILS))
             {
+                logger.LogEvent(username, "успешный вход", "Пользователь успешно вошел в систему.");
                 this.Hide();
                 Form3 form3 = new Form3(snils);
                 inactivityTimer.Stop();
@@ -147,7 +148,7 @@ namespace Employment_history
             }
             else
             {
-
+                logger.LogEvent(username, "неуспешный вход", "Не удалось войти. Неправильный логин, пароль или СНИЛС.");
                 MessageBox.Show("Неправильный логин, пароль или СНИЛС", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UserLocked();
             }
@@ -161,14 +162,12 @@ namespace Employment_history
                 return;
             }
 
-            //textBox1.Text = "admin1";
-            //textBox2.Text = "password1";
-
             string username = textBox1.Text;
             string password = textBox2.Text;
 
             if (AuthenticateAccounter(username, password))
             {
+                logger.LogEvent(username, "успешный вход", "Кадровик успешно вошел в систему.");
                 this.Hide();
                 Form2 form2 = new Form2();
                 inactivityTimer.Stop();
@@ -181,10 +180,38 @@ namespace Employment_history
             }
             else
             {
+                logger.LogEvent(username, "неуспешный вход", "Не удалось войти. Неправильный логин или пароль.");
                 MessageBox.Show("Неправильный логин или пароль", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UserLocked();
             }
         }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+            string snils = textBox3.Text;
+            string formattedSnils = string.Join("", snils.Where(char.IsDigit));
+
+            if (formattedSnils.Length > 14)
+            {
+                formattedSnils = formattedSnils.Substring(0, 14);
+            }
+
+            string formattedWithSpaces = string.Empty;
+            for (int i = 0; i < formattedSnils.Length; i++)
+            {
+                if (i > 0 && i % 3 == 0 && i < 11)
+                {
+                    formattedWithSpaces += " ";
+                }
+                formattedWithSpaces += formattedSnils[i];
+            }
+
+            textBox3.Text = formattedWithSpaces;
+
+            textBox3.SelectionStart = textBox3.Text.Length;
+        }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -230,7 +257,7 @@ namespace Employment_history
         private void UserLocked()
         {
             FileRead();
-            
+
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 if (lockTime == breakeTime) // Первая неправильная попытка входа
@@ -266,10 +293,10 @@ namespace Employment_history
             if (attempt >= maxAttempt) { return true; }
 
             return false;
-            
+
         }
 
-        private void FileReset (bool IsattemptSuccess)
+        private void FileReset(bool IsattemptSuccess)
         {
             if (!File.Exists(filePath) || IsattemptSuccess)
             {
@@ -313,10 +340,10 @@ namespace Employment_history
             byte[] key = Encoding.UTF8.GetBytes("nDwBKdttJMj9ewON");
             byte[] iv = Encoding.UTF8.GetBytes("7XP0dU4IxhqQb157");
 
-        // Генерируем ключ и вектор инициализации
+            // Генерируем ключ и вектор инициализации
 
-        // Шифруем данные
-        byte[] encryptedBytes = EncryptStringToBytes(originalText, key, iv);
+            // Шифруем данные
+            byte[] encryptedBytes = EncryptStringToBytes(originalText, key, iv);
 
             // Сохраняем зашифрованные данные в файл
             File.WriteAllBytes("encryptedFile.dat", encryptedBytes);

@@ -14,12 +14,16 @@ namespace Employment_history
         private string connectionStr = "Host=localhost;Username=postgres;Password=triPonnA5;Database=employeedb";
         DataTable dataTable = new DataTable();
         DataTable awardsTable = new DataTable();
-        private string snils;
+        private string snils, username;
+        Logger logger;
 
 
-        public Form3(string Snils)
+        public Form3(string _username, Logger _logger, string _Snils)
         {
-            snils = Snils;
+            snils = _Snils;
+            logger = _logger;
+            username = _username;
+
             InitializeComponent();
             this.FormClosing += _FormClosing;
 
