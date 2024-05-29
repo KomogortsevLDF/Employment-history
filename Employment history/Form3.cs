@@ -83,13 +83,14 @@ namespace Employment_history
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             this.Close();
+            logger.LogEvent(username, "Inactivity", "Form closed due to inactivity");
         }        
         
         private void WarningTimer_Tick(object sender, EventArgs e)
         {
             MessageBox.Show($"Обнаружено бездействие\n" +
                 $"Пользователь будет разлогирован через {WarningTimer.Interval/1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            
+            logger.LogEvent(username, "InactivityWarning", "Показано предупреждение о бездействии");
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -182,6 +183,7 @@ namespace Employment_history
                         writer.WriteLine();
                     }
                 }
+                logger.LogEvent(username, "FileSaved", $"Данные сохранены в файл: {saveFileDialog.FileName}");
             }
 
             inactivityTimer.Start();
@@ -191,6 +193,8 @@ namespace Employment_history
         {
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
+
+            logger.LogEvent(username, "ToolStripButtonClick", "Переключение на просмотр записей");
 
             DataView dataView = new DataView(dataTable);
             dataGridView1.DataSource = dataView;
@@ -202,6 +206,8 @@ namespace Employment_history
         {
             toolStripButton1.Enabled = true;
             toolStripButton2.Enabled = false;
+
+            logger.LogEvent(username, "ToolStripButtonClick", "Переключение на просмотр наград");
 
             DataView dataView = new DataView(awardsTable);
             dataGridView1.DataSource = dataView;
@@ -222,6 +228,8 @@ namespace Employment_history
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
                 {
                     connection.Open();
+
+                    logger.LogEvent(username, "DataLoad", "Подключение к базе данных открыто");
 
                     int empId = GetEmployeeIdBySnils(connection);
 
@@ -280,6 +288,8 @@ namespace Employment_history
                                 textBox5.Text = reader["education"].ToString();
                                 textBox6.Text = reader["profession"].ToString();
                                 textBox7.Text = DateTime.Parse(reader["date_registration"].ToString()).ToString("dd.MM.yyyy");
+
+                                logger.LogEvent(username, "DataLoad", "Данные сотрудника успешно загружены");
                             }
                         }
                      
@@ -289,6 +299,7 @@ namespace Employment_history
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+                logger.LogEvent(username, "DataLoadError", "Ошибка при загрузке данных: " + ex.Message);
             }
         }
 
@@ -312,6 +323,8 @@ namespace Employment_history
                 }
                 else
                 {
+                    logger.LogEvent(username, "EmployeeNotFound", $"Сотрудник с СНИЛС {snils} не найден");
+
                     return -1; // Возвращаем -1 если сотрудник не найден
                 }
             }

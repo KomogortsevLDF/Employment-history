@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Employment_history
 {
@@ -7,8 +9,12 @@ namespace Employment_history
     {
         private Timer inactivityTimer;
         private Timer WarningTimer;
-        public Form5(string sender)
+        private Logger logger;
+        private string username;
+        public Form5(string _username, Logger _logger, string sender)
         {
+            logger = _logger;
+            username = _username;
             Form5_Sender = sender;
             InitializeComponent();
             this.FormClosing += _FormClosing;
@@ -72,13 +78,14 @@ namespace Employment_history
             Form2 form2 = this.Owner as Form2;
             form2.Close();
             this.Close();
+            logger.LogEvent(username, "Inactivity", "Form closed due to inactivity");
         }
 
         private void WarningTimer_Tick(object sender, EventArgs e)
         {
             MessageBox.Show($"Обнаружено бездействие\n" +
                 $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+            logger.LogEvent(username, "InactivityWarning", "Показано предупреждение о бездействии");
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -138,10 +145,13 @@ namespace Employment_history
             catch
             {
                 MessageBox.Show("Формат даты введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidDateFormat", "Формат даты введен неверно");
                 return;
             }
 
             form2.row = row;
+            logger.LogEvent(username, "DataSaved", "Данные успешно сохранены");
+
 
             this.Close();
         }

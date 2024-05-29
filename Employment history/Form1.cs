@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Employment_history
 {
@@ -92,6 +93,7 @@ namespace Employment_history
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             //MessageBox.Show("Обнаружено бездействие", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //logger.LogEvent(username, "Inactivity", "Form closed due to inactivity");
         }
 
         private void ResetInactivityTimer()
@@ -136,7 +138,7 @@ namespace Employment_history
             {
                 logger.LogEvent(username, "успешный вход", "Пользователь успешно вошел в систему.");
                 this.Hide();
-                Form3 form3 = new Form3(snils);
+                Form3 form3 = new Form3(username, logger, snils);
                 inactivityTimer.Stop();
                 form3.ShowDialog();
 
@@ -169,7 +171,7 @@ namespace Employment_history
             {
                 logger.LogEvent(username, "успешный вход", "Кадровик успешно вошел в систему.");
                 this.Hide();
-                Form2 form2 = new Form2();
+                Form2 form2 = new Form2(username, logger);
                 inactivityTimer.Stop();
                 form2.ShowDialog();
                 form2.Close();

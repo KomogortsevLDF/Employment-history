@@ -93,12 +93,14 @@ namespace Employment_history
             Form2 form2 = this.Owner as Form2;
             form2.Close();
             this.Close();
+            logger.LogEvent(username, "Inactivity", "Form closed due to inactivity");
         }
 
         private void WarningTimer_Tick(object sender, EventArgs e)
         {
             MessageBox.Show($"Обнаружено бездействие\n" +
                 $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            logger.LogEvent(username, "InactivityWarning", "Показано предупреждение о бездействии");
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -139,7 +141,7 @@ namespace Employment_history
             if (row.Any(field => string.IsNullOrEmpty(field)))
             {
                 MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                logger.LogEvent(username, "Ошибка регистрации", "Некоторые поля не заполнены");
+                logger.LogEvent(username, "RegistrationError", "Некоторые поля не заполнены");
                 return;
             }
 
@@ -153,27 +155,28 @@ namespace Employment_history
             catch
             {
                 MessageBox.Show("Формат даты введен неверно\nОжидаемый формат: dd.MM.yyyy", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Неверный формат даты");
                 return;
             }
 
             if (!securityManager.ValidateLogin(textBox6.Text.Trim()))
             {
                 MessageBox.Show("Логин должен содержать не менее 8 символов!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                logger.LogEvent(username, "Ошибка регистрации", "Логин не соответствует требованиям");
+                logger.LogEvent(username, "RegistrationError", "Логин не соответствует требованиям");
                 return;
             }
 
             if (!securityManager.ValidatePassword(textBox7.Text.Trim()))
             {
                 MessageBox.Show("Пароль должен содержать не менее 8 символов, включать заглавные и строчные буквы, цифры и специальные символы!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                logger.LogEvent(username, "Ошибка регистрации", "Пароль не соответствует требованиям");
+                logger.LogEvent(username, "RegistrationError", "Пароль не соответствует требованиям");
                 return;
             }
 
             if (textBox7.Text.Trim() != textBox8.Text.Trim())
             {
                 MessageBox.Show("Пароли не совпадают!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                logger.LogEvent(username, "Ошибка регистрации", "Пароли не совпадают");
+                logger.LogEvent(username, "RegistrationError", "Пароли не совпадают");
                 return;
             }
 
@@ -209,20 +212,20 @@ namespace Employment_history
                 if (isFindL)
                 {
                     MessageBox.Show("Сотрудник с таким логином уже существует!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    logger.LogEvent(username, "Ошибка регистрации", "Логин уже существует");
+                    logger.LogEvent(username, "RegistrationError", "Логин уже существует");
                     return;
                 }
                 else if (isFindP)
                 {
                     MessageBox.Show("Сотрудник с таким паролем уже существует!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    logger.LogEvent(username, "Ошибка регистрации", "Пароль уже существует");
+                    logger.LogEvent(username, "RegistrationError", "Пароль уже существует");
                     return;
                 }
             }
 
             Form2 form2 = this.Owner as Form2;
             form2.row = row;
-            logger.LogEvent(username, "Успешная регистрация", "Пользователь успешно зарегистрирован");
+            logger.LogEvent(username, "RegistationSuccess", "Пользователь успешно зарегистрирован");
             this.Close();
         }
 
@@ -232,5 +235,9 @@ namespace Employment_history
             WarningTimer.Stop();
         }
 
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

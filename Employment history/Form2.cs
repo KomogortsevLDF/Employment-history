@@ -98,13 +98,14 @@ namespace Employment_history
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             this.Close();
+            logger.LogEvent(username, "Inactivity", "Форма закрыта из-за бездействия");
         }
 
         private void WarningTimer_Tick(object sender, EventArgs e)
         {
             MessageBox.Show($"Обнаружено бездействие\n" +
                 $"Пользователь будет разлогирован через {WarningTimer.Interval / 1000} сек.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+            logger.LogEvent(username, "InactivityWarning", "Показано предупреждение о бездействии");
         }
 
         // Метод для сброса таймера при активности пользователя
@@ -159,6 +160,8 @@ namespace Employment_history
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
+
                 return;
             }
 
@@ -171,6 +174,8 @@ namespace Employment_history
 
                     if (empId == -1) 
                     {
+                        logger.LogEvent(username, "EmployeeNotFound", "Сотрудник с таким СНИЛС не найден");
+
                         MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return; 
                     }
@@ -237,6 +242,8 @@ namespace Employment_history
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+                logger.LogEvent(username, "DataLoadError", "Ошибка при загрузке данных: " + ex.Message);
+
             }
 
             NumberRows();
@@ -245,6 +252,8 @@ namespace Employment_history
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно",
                     "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
+
             }
 
 
@@ -339,6 +348,8 @@ namespace Employment_history
             }
 
             inactivityTimer.Start();
+            logger.LogEvent(username, "SaveData", "Данные сохранены в файл");
+
         }
 
         void InsertIntoDB(object sender)
@@ -415,8 +426,14 @@ namespace Employment_history
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            logger.LogEvent(username, "MenuClick", "Меню добавления нового сотрудника");
 
-            if (!IsSnilsValid(textBox1.Text.Trim())) MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            if (!IsSnilsValid(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
+            }
             else if (!IsUserExist(textBox1.Text.Trim()))
             {
                 Form4 form4 = new Form4(username, logger);
@@ -427,14 +444,19 @@ namespace Employment_history
             }
             else if (FirstWordFired(textBox1.Text.Trim()))
             {
-                Form5 form5 = new Form5("toolStripMenuItem2");
+                Form5 form5 = new Form5(username, logger, "toolStripMenuItem2");
                 form5.Owner = this;
                 form5.ShowDialog();
 
                 InsertIntoDB(sender);
             }
-            else MessageBox.Show("Данный сотрудник уже числится в базе данных", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            
+            else
+            {
+                MessageBox.Show("Данный сотрудник уже числится в базе данных", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "DuplicateEmployee", "Сотрудник уже числится в базе данных");
+
+            }
+
             inactivityTimer.Start();
         }
 
@@ -457,8 +479,9 @@ namespace Employment_history
                 {
                     cmd.Parameters.AddWithValue("snils", SNILS);
                     var result = cmd.ExecuteScalar();
-                    if (Convert.ToInt32(result) > 0) { return  true; }
-                    else { return false; }
+                    bool exists = result != null && Convert.ToInt32(result) > 0;
+                    logger.LogEvent(username, "CheckUserExistence", $"Проверка существования пользователя: {exists}");
+                    return exists;
                 }
             }
         }
@@ -466,18 +489,25 @@ namespace Employment_history
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            logger.LogEvent(username, "MenuClick", "Меню обновления информации о сотруднике");
+
 
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
             toolStripMenuItem3.Tag = "toolStripMenuItem3";
-            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!IsUserExist(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
+            }
             else if (!FirstWordFired(textBox1.Text.Trim()))
             {
-                Form5 form5 = new Form5("toolStripMenuItem3");
+                Form5 form5 = new Form5(username, logger, "toolStripMenuItem3");
                 form5.Owner = this;
                 form5.ShowDialog();
 
@@ -487,18 +517,24 @@ namespace Employment_history
 
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+            else
+            {
+                MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
+            }
             inactivityTimer.Start();
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            logger.LogEvent(username, "MenuClick", "Меню добавления награды сотруднику");
+
 
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
@@ -513,10 +549,15 @@ namespace Employment_history
                 toolStripButton2.Enabled = true;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!IsUserExist(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
+
+            }
             else if (!FirstWordFired(textBox1.Text.Trim()))
             {
-                Form5 form5 = new Form5("toolStripMenuItem5");
+                Form5 form5 = new Form5(username, logger, "toolStripMenuItem5");
                 form5.Owner = this;
                 form5.ShowDialog();
 
@@ -526,8 +567,12 @@ namespace Employment_history
 
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+            {
+                MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
 
+            }
             inactivityTimer.Start();
         }
 
@@ -540,6 +585,8 @@ namespace Employment_history
             dataGridView1.DataSource = dataView;
             dataGridView1.ReadOnly = true;
             NumberRows();
+            logger.LogEvent(username, "DataViewSwitch", "Переключение на основную таблицу");
+
         }
 
         private void toolStripButton2_Click(object sender, EventArgs e)
@@ -551,22 +598,32 @@ namespace Employment_history
             dataGridView1.DataSource = dataView;
             dataGridView1.ReadOnly = true;
             NumberRows();
+            logger.LogEvent(username, "DataViewSwitch", "Переключение на таблицу наград");
+
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            logger.LogEvent(username, "MenuClick", "Меню добавления записи о сотруднике");
+
 
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!IsUserExist(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
+
+            }
             else if (!FirstWordFired(textBox1.Text.Trim()))
             {
-                Form5 form5 = new Form5("toolStripMenuItem4");
+                Form5 form5 = new Form5(username, logger, "toolStripMenuItem4");
                 form5.Owner = this;
                 form5.ShowDialog();
 
@@ -576,25 +633,37 @@ namespace Employment_history
 
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+            {
+                MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
 
+            }
             inactivityTimer.Start();
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            logger.LogEvent(username, "MenuClick", "Меню удаления сотрудника");
+
 
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim())) MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!IsUserExist(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
+
+            }
             else if (!FirstWordFired(textBox1.Text.Trim()))
             {
-                Form5 form5 = new Form5("toolStripMenuItem6");
+                Form5 form5 = new Form5(username, logger, "toolStripMenuItem6");
                 form5.Owner = this;
                 form5.ShowDialog();
 
@@ -604,8 +673,11 @@ namespace Employment_history
 
                 row = null;
             }
-            else MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
+            else
+            {
+                MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
+            }
             inactivityTimer.Start();
         }
 
@@ -622,7 +694,10 @@ namespace Employment_history
                     if (result != null)
                     {
                         string entry = result.ToString();
-                        if (entry.StartsWith("Уволен", StringComparison.OrdinalIgnoreCase)) { return true; }
+                        bool isFired = entry.StartsWith("Уволен", StringComparison.OrdinalIgnoreCase);
+                        logger.LogEvent(username, "CheckEmployeeStatus", $"Проверка статуса сотрудника (уволен): {isFired}");
+                        return isFired;
+
                     }
                 }
                 return false;

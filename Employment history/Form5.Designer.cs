@@ -77,7 +77,6 @@
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(421, 22);
             this.textBox4.TabIndex = 16;
- 
             // 
             // textBox3
             // 
@@ -85,6 +84,7 @@
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(174, 22);
             this.textBox3.TabIndex = 15;
+
             // 
             // button1
             // 
