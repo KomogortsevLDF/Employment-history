@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -17,7 +18,7 @@ namespace Employment_history
         private DataTable awardsTable = new DataTable();
         private string prevSnils = " ", username;
         Logger logger;
-
+        private string formatSnils = " ";
         public string[] row { get; set; }
         
         public Form2(string _username, Logger _logger)
@@ -30,12 +31,12 @@ namespace Employment_history
 
             // Инициализация таймеров
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 5 * 60 * 1000;
+            inactivityTimer.Interval = 1 * 60 * 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
 
             WarningTimer = new Timer();
-            WarningTimer.Interval = 1 * 60 * 1000;
+            WarningTimer.Interval = 1 * 30 * 1000;
             WarningTimer.Tick += WarningTimer_Tick;
             WarningTimer.Start();
 
@@ -151,13 +152,13 @@ namespace Employment_history
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (textBox1.Text == prevSnils || textBox1.Text == "") { return; }
-            else { prevSnils = textBox1.Text; }
+            if (formatSnils == prevSnils || formatSnils == "") { return; }
+            else { prevSnils = formatSnils; }
 
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
 
-            if (!IsSnilsValid(textBox1.Text.Trim()))
+            if (!IsSnilsValid(formatSnils.Trim()))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
@@ -170,7 +171,7 @@ namespace Employment_history
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
                 {
                     connection.Open();
-                    int empId = GetEmployeeIdBySnils(connection, textBox1.Text.Trim());
+                    int empId = GetEmployeeIdBySnils(connection, formatSnils.Trim());
 
                     if (empId == -1) 
                     {
@@ -248,7 +249,7 @@ namespace Employment_history
 
             NumberRows();
 
-            if (!IsSnilsValid(textBox1.Text))
+            if (!IsSnilsValid(formatSnils))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно",
                     "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -357,8 +358,15 @@ namespace Employment_history
             if (row == null) return;
             else
             {
-                DateTime dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
-                DateTime dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+                DateTime dateBirth = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+                DateTime dateReg = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+
+                if (row.Length > 5)
+                {
+                    dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
+                    dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+                }
+                
                 DateTime dateValue = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
@@ -370,6 +378,8 @@ namespace Employment_history
                             "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
                             " @login, @pass, @snils);";
 
+                        string formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
+
                         using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
                         {
                             command.Parameters.AddWithValue("@tk_number", GetTkNumber(connection)); // function
@@ -380,10 +390,10 @@ namespace Employment_history
                             command.Parameters.AddWithValue("@date_registration", dateReg);
                             command.Parameters.AddWithValue("@login", row[8]);
                             command.Parameters.AddWithValue("@pass", row[9]);
-                            command.Parameters.AddWithValue("@snils", textBox1.Text.Trim());
+                            command.Parameters.AddWithValue("@snils", formatSnils);
 
                             int rowsAffected = command.ExecuteNonQuery();
-                            if (rowsAffected > 0) { MessageBox.Show("Done!"); }
+                            //if (rowsAffected > 0) { MessageBox.Show("Done!"); }
                             // rowsAffected содержит количество добавленных строк (должно быть 1, если вставка прошла успешно)
                         }
 
@@ -426,15 +436,16 @@ namespace Employment_history
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            WarningTimer.Stop();
             logger.LogEvent(username, "MenuClick", "Меню добавления нового сотрудника");
 
 
-            if (!IsSnilsValid(textBox1.Text.Trim()))
+            if (!IsSnilsValid(formatSnils))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
             }
-            else if (!IsUserExist(textBox1.Text.Trim()))
+            else if (!IsUserExist(formatSnils))
             {
                 Form4 form4 = new Form4(username, logger);
                 form4.Owner = this;
@@ -442,7 +453,7 @@ namespace Employment_history
 
                 InsertIntoDB(sender);
             }
-            else if (FirstWordFired(textBox1.Text.Trim()))
+            else if (FirstWordFired(formatSnils))
             {
                 Form5 form5 = new Form5(username, logger, "toolStripMenuItem2");
                 form5.Owner = this;
@@ -458,6 +469,7 @@ namespace Employment_history
             }
 
             inactivityTimer.Start();
+            WarningTimer.Start();
         }
 
         private bool IsSnilsValid(string input)
@@ -467,7 +479,7 @@ namespace Employment_history
             Regex regex = new Regex(pattern);
 
             // Проверяем, соответствует ли входная строка образцу
-            return regex.IsMatch(input);
+            return true;
         }
 
         private bool IsUserExist(string SNILS)
@@ -489,10 +501,11 @@ namespace Employment_history
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            WarningTimer.Stop();
+
             logger.LogEvent(username, "MenuClick", "Меню обновления информации о сотруднике");
 
-
-            if (!IsSnilsValid(textBox1.Text.Trim()))
+            if (!IsSnilsValid(formatSnils))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
@@ -500,12 +513,12 @@ namespace Employment_history
             }
 
             toolStripMenuItem3.Tag = "toolStripMenuItem3";
-            if (!IsUserExist(textBox1.Text.Trim()))
+            if (!IsUserExist(formatSnils))
             {
                 MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
             }
-            else if (!FirstWordFired(textBox1.Text.Trim()))
+            else if (!FirstWordFired(formatSnils))
             {
                 Form5 form5 = new Form5(username, logger, "toolStripMenuItem3");
                 form5.Owner = this;
@@ -523,13 +536,15 @@ namespace Employment_history
                 logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
             }
             inactivityTimer.Start();
+            WarningTimer.Start();
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
-            logger.LogEvent(username, "MenuClick", "Меню добавления награды сотруднику");
+            WarningTimer.Stop();
 
+            logger.LogEvent(username, "MenuClick", "Меню добавления награды сотруднику");
 
             if (!IsSnilsValid(textBox1.Text.Trim()))
             {
@@ -538,7 +553,7 @@ namespace Employment_history
                 return;
             }
 
-            if (IsUserExist(textBox1.Text.Trim()))
+            if (IsUserExist(formatSnils))
             {
                 toolStripButton1.Enabled = true;
                 toolStripButton2.Enabled = false;
@@ -549,13 +564,13 @@ namespace Employment_history
                 toolStripButton2.Enabled = true;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim()))
+            if (!IsUserExist(formatSnils))
             {
                 MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
 
             }
-            else if (!FirstWordFired(textBox1.Text.Trim()))
+            else if (!FirstWordFired(formatSnils))
             {
                 Form5 form5 = new Form5(username, logger, "toolStripMenuItem5");
                 form5.Owner = this;
@@ -573,7 +588,9 @@ namespace Employment_history
                 logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
 
             }
+
             inactivityTimer.Start();
+            WarningTimer.Start();
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -605,23 +622,25 @@ namespace Employment_history
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            WarningTimer.Stop();
+
             logger.LogEvent(username, "MenuClick", "Меню добавления записи о сотруднике");
 
 
-            if (!IsSnilsValid(textBox1.Text.Trim()))
+            if (!IsSnilsValid(formatSnils))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim()))
+            if (!IsUserExist(formatSnils))
             {
                 MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
 
             }
-            else if (!FirstWordFired(textBox1.Text.Trim()))
+            else if (!FirstWordFired(formatSnils))
             {
                 Form5 form5 = new Form5(username, logger, "toolStripMenuItem4");
                 form5.Owner = this;
@@ -639,29 +658,32 @@ namespace Employment_history
                 logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
 
             }
+
             inactivityTimer.Start();
+            WarningTimer.Start();
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
             inactivityTimer.Stop();
+            WarningTimer.Stop();
+
             logger.LogEvent(username, "MenuClick", "Меню удаления сотрудника");
 
-
-            if (!IsSnilsValid(textBox1.Text.Trim()))
+            if (!IsSnilsValid(formatSnils))
             {
                 MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
                 return;
             }
 
-            if (!IsUserExist(textBox1.Text.Trim()))
+            if (!IsUserExist(formatSnils))
             {
                 MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
 
             }
-            else if (!FirstWordFired(textBox1.Text.Trim()))
+            else if (!FirstWordFired(formatSnils))
             {
                 Form5 form5 = new Form5(username, logger, "toolStripMenuItem6");
                 form5.Owner = this;
@@ -678,7 +700,9 @@ namespace Employment_history
                 MessageBox.Show("Данный сотрудник не числится в базе", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "EmployeeNotInDatabase", "Сотрудник не числится в базе");
             }
+
             inactivityTimer.Start();
+            WarningTimer.Start();
         }
 
         public bool FirstWordFired(string targetValue)
@@ -708,6 +732,34 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
             WarningTimer.Stop();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            string snils = textBox1.Text;
+            string formattedSnils = string.Join("", snils.Where(char.IsDigit));
+
+            if (formattedSnils.Length > 11)
+            {
+                formattedSnils = formattedSnils.Substring(0, 11);
+            }
+
+            string formattedWithSpaces = string.Empty;
+            for (int i = 0; i < formattedSnils.Length; i++)
+            {
+                if (i > 0 && i % 3 == 0 && i < 11)
+                {
+                    formattedWithSpaces += " ";
+                }
+                formattedWithSpaces += formattedSnils[i];
+            }
+
+            textBox1.Text = formattedWithSpaces;
+
+            textBox1.SelectionStart = textBox1.Text.Length;
+
+            formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
+
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)

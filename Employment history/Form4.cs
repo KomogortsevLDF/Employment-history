@@ -23,7 +23,6 @@ namespace Employment_history
             this.FormClosing += _FormClosing;
 
             securityManager = new SecurityManager();
-            logger = new Logger("log.txt");
 
             // Инициализация таймеров
             inactivityTimer = new Timer();
@@ -76,6 +75,8 @@ namespace Employment_history
         private void _KeyPress(object sender, KeyPressEventArgs e)
         {
             ResetInactivityTimer();
+
+            if (char.IsLetter(e.KeyChar)) { e.Handled = true; }
         }
 
         private void _KeyDown(object sender, KeyEventArgs e)
@@ -235,9 +236,51 @@ namespace Employment_history
             WarningTimer.Stop();
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
 
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+            // Получаем текст из текстового поля
+            string dateInput = textBox2.Text;
+
+            // Оставляем только цифры
+            string formattedDate = string.Join("", dateInput.Where(char.IsDigit));
+
+            // Ограничиваем длину строки до 8 цифр
+            if (formattedDate.Length > 8)
+            {
+                formattedDate = formattedDate.Substring(0, 8);
+            }
+
+            // Форматируем строку в формат даты
+            string formattedWithDots = string.Empty;
+            if (formattedDate.Length >= 5)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2, 2)}.{formattedDate.Substring(4)}";
+            }
+            else if (formattedDate.Length >= 3)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2)}";
+            }
+            else if (formattedDate.Length >= 1)
+            {
+                formattedWithDots = formattedDate.Substring(0, formattedDate.Length);
+            }
+
+            // Установите флаг, чтобы избежать рекурсивного вызова TextChanged
+            textBox2.TextChanged -= textBox2_TextChanged;
+
+            // Обновляем текст в текстовом поле
+            textBox2.Text = formattedWithDots;
+
+            // Перемещаем курсор в конец текста
+            textBox2.SelectionStart = textBox2.Text.Length;
+
+            // Включаем обработчик обратно
+            textBox2.TextChanged += textBox2_TextChanged;
         }
     }
 }

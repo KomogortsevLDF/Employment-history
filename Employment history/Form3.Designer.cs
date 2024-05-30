@@ -75,7 +75,7 @@
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 30);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -97,14 +97,14 @@
             this.bindingNavigatorSeparator1,
             this.bindingNavigatorSeparator2,
             this.toolStripButton2});
-            this.bindingNavigator1.Location = new System.Drawing.Point(0, 28);
+            this.bindingNavigator1.Location = new System.Drawing.Point(0, 30);
             this.bindingNavigator1.MoveFirstItem = null;
             this.bindingNavigator1.MoveLastItem = null;
             this.bindingNavigator1.MoveNextItem = null;
             this.bindingNavigator1.MovePreviousItem = null;
             this.bindingNavigator1.Name = "bindingNavigator1";
             this.bindingNavigator1.PositionItem = null;
-            this.bindingNavigator1.Size = new System.Drawing.Size(800, 27);
+            this.bindingNavigator1.Size = new System.Drawing.Size(800, 31);
             this.bindingNavigator1.TabIndex = 3;
             this.bindingNavigator1.Text = "bindingNavigator1";
             // 
@@ -114,7 +114,7 @@
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(29, 24);
+            this.toolStripButton1.Size = new System.Drawing.Size(29, 28);
             this.toolStripButton1.Text = "Перейти к сведениям о работе";
             this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
@@ -143,9 +143,9 @@
             this.panel1.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.panel1.Controls.Add(this.dataGridView1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 55);
+            this.panel1.Location = new System.Drawing.Point(0, 61);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(800, 375);
+            this.panel1.Size = new System.Drawing.Size(800, 369);
             this.panel1.TabIndex = 6;
             // 
             // dataGridView1
@@ -162,16 +162,16 @@
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(547, 372);
+            this.dataGridView1.Size = new System.Drawing.Size(547, 366);
             this.dataGridView1.TabIndex = 0;
             // 
             // panel2
             // 
             this.panel2.Controls.Add(this.flowLayoutPanel1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panel2.Location = new System.Drawing.Point(0, 55);
+            this.panel2.Location = new System.Drawing.Point(0, 61);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(247, 375);
+            this.panel2.Size = new System.Drawing.Size(247, 369);
             this.panel2.TabIndex = 7;
             // 
             // flowLayoutPanel1
@@ -195,7 +195,7 @@
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(244, 375);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(244, 369);
             this.flowLayoutPanel1.TabIndex = 5;
             // 
             // label8

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
@@ -128,11 +129,14 @@ namespace Employment_history
                 return;
             }
 
-            string username = textBox1.Text;
-            string password = textBox2.Text;
+            string username = textBox1.Text.Trim();
+            string password = textBox2.Text.Trim();
             string SNILS = textBox3.Text;
 
-            snils = SNILS;
+            // Замена пробелов на тире
+            SNILS = Regex.Replace(SNILS, @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
+
+            snils = SNILS;           
 
             if (AuthenticateUser(username, password, SNILS))
             {
@@ -212,6 +216,9 @@ namespace Employment_history
             textBox3.Text = formattedWithSpaces;
 
             textBox3.SelectionStart = textBox3.Text.Length;
+
+           // textBox3.TextChanged += textBox3_TextChanged; // Восстанавливаем обработчик
+
         }
 
 
