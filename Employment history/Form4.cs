@@ -40,11 +40,11 @@ namespace Employment_history
             this.KeyPress += _KeyPress;
             this.MouseWheel += _MouseWheel;
             textBox1.MouseMove += _MouseMove;
-            textBox1.KeyPress += _KeyPress;
+            textBox1.KeyPress += _KeyPressTB1;
             textBox2.MouseMove += _MouseMove;
             textBox2.KeyPress += _KeyPress;
             textBox3.MouseMove += _MouseMove;
-            textBox3.KeyPress += _KeyPress;
+            textBox3.KeyPress += _KeyPressNotDigit;
             textBox4.MouseMove += _MouseMove;
             textBox4.KeyPress += _KeyPress;
             textBox5.MouseMove += _MouseMove;
@@ -75,8 +75,21 @@ namespace Employment_history
         private void _KeyPress(object sender, KeyPressEventArgs e)
         {
             ResetInactivityTimer();
+        }        
+        
+        private void _KeyPressTB1(object sender, KeyPressEventArgs e)
+        {
+            ResetInactivityTimer();
 
-            if (char.IsLetter(e.KeyChar)) { e.Handled = true; }
+            if (!char.IsLetter(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != ' ') { e.Handled = true; }
+        }        
+        
+        private void _KeyPressNotDigit(object sender, KeyPressEventArgs e)
+        {
+            ResetInactivityTimer();
+
+            if (!char.IsLetter(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != ' ') { e.Handled = true; }
+
         }
 
         private void _KeyDown(object sender, KeyEventArgs e)
@@ -159,10 +172,34 @@ namespace Employment_history
                 logger.LogEvent(username, "RegistrationError", "Неверный формат даты");
                 return;
             }
+            if (!securityManager.ValidateFIO(textBox1.Text.Trim()))
+            {
+                MessageBox.Show("Введите корректное ФИО", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "ФИО не соответствует требованиям");
+                return;
+            }
 
+            if (!securityManager.ValidateDate(textBox2.Text.Trim()) || !securityManager.ValidateDate(textBox9.Text.Trim()) || !securityManager.ValidateDate(textBox5.Text.Trim()))
+            {
+                MessageBox.Show("Введите корректную дату", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Дата не соответсвтует требованиям");
+                return;
+            }
+            if (textBox10.Text.Trim().Length < 5)
+            {
+                MessageBox.Show("Запись должна содержать хотя бы 5 символов", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Запись слишком короткая");
+                return;
+            }
+            if (textBox11.Text.Trim().Length < 5)
+            {
+                MessageBox.Show("Запись документа должна содержать хотя бы 5 символов", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Запись документа слишком короткая");
+                return;
+            }
             if (!securityManager.ValidateLogin(textBox6.Text.Trim()))
             {
-                MessageBox.Show("Логин должен содержать не менее 8 символов!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Логин не корректен!", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "RegistrationError", "Логин не соответствует требованиям");
                 return;
             }
@@ -186,7 +223,8 @@ namespace Employment_history
                 connection.Open();
                 bool isFindL = false;
                 bool isFindP = false;
-                string sql = "SELECT login, pass FROM empinfo;";
+                bool isFindS = false;
+                string sql = "SELECT login, pass, snils FROM empinfo;";
 
                 using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))
                 {
@@ -205,7 +243,7 @@ namespace Employment_history
                             {
                                 isFindP = true;
                                 break;
-                            }
+                            }                            
                         }
                     }
                 }
@@ -234,11 +272,6 @@ namespace Employment_history
         {
             inactivityTimer.Stop();
             WarningTimer.Stop();
-        }
-
-        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
@@ -281,6 +314,90 @@ namespace Employment_history
 
             // Включаем обработчик обратно
             textBox2.TextChanged += textBox2_TextChanged;
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+            // Получаем текст из текстового поля
+            string dateInput = textBox5.Text;
+
+            // Оставляем только цифры
+            string formattedDate = string.Join("", dateInput.Where(char.IsDigit));
+
+            // Ограничиваем длину строки до 8 цифр
+            if (formattedDate.Length > 8)
+            {
+                formattedDate = formattedDate.Substring(0, 8);
+            }
+
+            // Форматируем строку в формат даты
+            string formattedWithDots = string.Empty;
+            if (formattedDate.Length >= 5)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2, 2)}.{formattedDate.Substring(4)}";
+            }
+            else if (formattedDate.Length >= 3)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2)}";
+            }
+            else if (formattedDate.Length >= 1)
+            {
+                formattedWithDots = formattedDate.Substring(0, formattedDate.Length);
+            }
+
+            // Установите флаг, чтобы избежать рекурсивного вызова TextChanged
+            textBox5.TextChanged -= textBox5_TextChanged;
+
+            // Обновляем текст в текстовом поле
+            textBox5.Text = formattedWithDots;
+
+            // Перемещаем курсор в конец текста
+            textBox5.SelectionStart = textBox5.Text.Length;
+
+            // Включаем обработчик обратно
+            textBox5.TextChanged += textBox5_TextChanged;
+        }
+
+        private void textBox9_TextChanged(object sender, EventArgs e)
+        {
+            // Получаем текст из текстового поля
+            string dateInput = textBox9.Text;
+
+            // Оставляем только цифры
+            string formattedDate = string.Join("", dateInput.Where(char.IsDigit));
+
+            // Ограничиваем длину строки до 8 цифр
+            if (formattedDate.Length > 8)
+            {
+                formattedDate = formattedDate.Substring(0, 8);
+            }
+
+            // Форматируем строку в формат даты
+            string formattedWithDots = string.Empty;
+            if (formattedDate.Length >= 5)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2, 2)}.{formattedDate.Substring(4)}";
+            }
+            else if (formattedDate.Length >= 3)
+            {
+                formattedWithDots = $"{formattedDate.Substring(0, 2)}.{formattedDate.Substring(2)}";
+            }
+            else if (formattedDate.Length >= 1)
+            {
+                formattedWithDots = formattedDate.Substring(0, formattedDate.Length);
+            }
+
+            // Установите флаг, чтобы избежать рекурсивного вызова TextChanged
+            textBox9.TextChanged -= textBox9_TextChanged;
+
+            // Обновляем текст в текстовом поле
+            textBox9.Text = formattedWithDots;
+
+            // Перемещаем курсор в конец текста
+            textBox9.SelectionStart = textBox9.Text.Length;
+
+            // Включаем обработчик обратно
+            textBox9.TextChanged += textBox9_TextChanged;
         }
     }
 }

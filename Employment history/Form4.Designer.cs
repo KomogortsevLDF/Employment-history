@@ -71,7 +71,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(424, 27);
             this.textBox1.TabIndex = 5;
-            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this._KeyPress);
+            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this._KeyPressTB1);
             // 
             // textBox2
             // 
@@ -81,7 +81,6 @@
             this.textBox2.Size = new System.Drawing.Size(421, 27);
             this.textBox2.TabIndex = 6;
             this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
-            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
             // 
             // textBox3
             // 
@@ -90,6 +89,7 @@
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(418, 27);
             this.textBox3.TabIndex = 7;
+            this.textBox3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this._KeyPressNotDigit);
             // 
             // textBox4
             // 
@@ -98,6 +98,7 @@
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(421, 27);
             this.textBox4.TabIndex = 8;
+            this.textBox4.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this._KeyPressNotDigit);
             // 
             // textBox5
             // 
@@ -106,6 +107,7 @@
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(421, 27);
             this.textBox5.TabIndex = 9;
+            this.textBox5.TextChanged += new System.EventHandler(this.textBox5_TextChanged);
             // 
             // label1
             // 
@@ -228,6 +230,7 @@
             this.textBox9.Name = "textBox9";
             this.textBox9.Size = new System.Drawing.Size(421, 27);
             this.textBox9.TabIndex = 21;
+            this.textBox9.TextChanged += new System.EventHandler(this.textBox9_TextChanged);
             // 
             // label10
             // 
@@ -246,6 +249,7 @@
             this.textBox10.Name = "textBox10";
             this.textBox10.Size = new System.Drawing.Size(421, 27);
             this.textBox10.TabIndex = 23;
+            this.textBox10.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this._KeyPressNotDigit);
             // 
             // label11
             // 

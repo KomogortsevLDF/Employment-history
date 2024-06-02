@@ -31,12 +31,12 @@ namespace Employment_history
 
             // Инициализация таймеров
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 1 * 60 * 1000;
+            inactivityTimer.Interval = 5 * 60 * 1000;
             inactivityTimer.Tick += InactivityTimer_Tick;
             inactivityTimer.Start();
 
             WarningTimer = new Timer();
-            WarningTimer.Interval = 1 * 30 * 1000;
+            WarningTimer.Interval = 1 * 60 * 1000;
             WarningTimer.Tick += WarningTimer_Tick;
             WarningTimer.Start();
 
@@ -254,10 +254,7 @@ namespace Employment_history
                 MessageBox.Show("СНИЛС сотрудника введен неверно",
                     "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
-
             }
-
-
         }
 
 
@@ -378,7 +375,7 @@ namespace Employment_history
                             "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
                             " @login, @pass, @snils);";
 
-                        string formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
+                        //string formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
 
                         using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
                         {
@@ -405,7 +402,7 @@ namespace Employment_history
 
                     using (NpgsqlCommand command = new NpgsqlCommand(sqlEntr, connection))
                     {
-                        command.Parameters.AddWithValue("@id_emp", GetEmployeeIdBySnils(connection, textBox1.Text.Trim()));
+                        command.Parameters.AddWithValue("@id_emp", GetEmployeeIdBySnils(connection, formatSnils));
                         command.Parameters.AddWithValue("@date", dateValue);
                         command.Parameters.AddWithValue("@entry", row[1]);
                         command.Parameters.AddWithValue("@document", row[2]);
@@ -439,6 +436,7 @@ namespace Employment_history
             WarningTimer.Stop();
             logger.LogEvent(username, "MenuClick", "Меню добавления нового сотрудника");
 
+            //formatSnils = "111-111-111 16";
 
             if (!IsSnilsValid(formatSnils))
             {
@@ -477,9 +475,9 @@ namespace Employment_history
             // Создаем регулярное выражение, соответствующее образцу
             string pattern = @"^\d{3}-\d{3}-\d{3} \d{2}$";
             Regex regex = new Regex(pattern);
-
+            
             // Проверяем, соответствует ли входная строка образцу
-            return true;
+            return input.Length == 14;
         }
 
         private bool IsUserExist(string SNILS)
@@ -728,12 +726,6 @@ namespace Employment_history
             }
         }
 
-        private void _FormClosing(object sender, FormClosingEventArgs e)
-        {
-            inactivityTimer.Stop();
-            WarningTimer.Stop();
-        }
-
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             string snils = textBox1.Text;
@@ -759,12 +751,13 @@ namespace Employment_history
             textBox1.SelectionStart = textBox1.Text.Length;
 
             formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
-
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private void _FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            inactivityTimer.Stop();
+            WarningTimer.Stop();
         }
+
     }
 }

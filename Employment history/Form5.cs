@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Security;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
@@ -13,6 +14,9 @@ namespace Employment_history
         private Timer WarningTimer;
         private Logger logger;
         private string username;
+
+        SecurityManager securityManager = new SecurityManager();
+
         public Form5(string _username, Logger _logger, string sender)
         {
             logger = _logger;
@@ -20,6 +24,8 @@ namespace Employment_history
             Form5_Sender = sender;
             InitializeComponent();
             this.FormClosing += _FormClosing;
+
+            
 
             // Инициализация таймеров
             inactivityTimer = new Timer();
@@ -39,7 +45,7 @@ namespace Employment_history
             textBox3.MouseMove += _MouseMove;
             textBox3.KeyPress += _KeyPress;
             textBox4.MouseMove += _MouseMove;
-            textBox4.KeyPress += _KeyPress;
+            textBox4.KeyPress += textBox4_KeyPress;
             textBox5.MouseMove += _MouseMove;
             textBox5.KeyPress += _KeyPress;
             label3.MouseMove += _MouseMove;
@@ -151,6 +157,20 @@ namespace Employment_history
                 return;
             }
 
+            if(row.Any(field => string.IsNullOrEmpty(field)))
+{
+                MessageBox.Show("Некоторые поля не заполнены", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Некоторые поля не заполнены");
+                return;
+            }   
+
+            if (!securityManager.ValidateDate(textBox3.Text.Trim()))
+            {
+                MessageBox.Show("Введите корректную дату", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "RegistrationError", "Дата не соответсвтует требованиям");
+                return;
+            }
+
             form2.row = row;
             logger.LogEvent(username, "DataSaved", "Данные успешно сохранены");
 
@@ -209,6 +229,13 @@ namespace Employment_history
 
             // Включаем обработчик обратно
             textBox3.TextChanged += textBox3_TextChanged;
+        }
+
+        private void textBox4_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            ResetInactivityTimer();
+
+            if (!char.IsLetter(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != ' ') { e.Handled = true; }
         }
     }
 }
