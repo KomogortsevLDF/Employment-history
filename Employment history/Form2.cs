@@ -350,7 +350,7 @@ namespace Employment_history
 
         }
 
-        void InsertIntoDB(object sender)
+        private void InsertIntoDB(object sender)
         {
             if (row == null) return;
             else
@@ -374,6 +374,7 @@ namespace Employment_history
                         string sqlEmp = "INSERT INTO empinfo (tk_number, name, date_birth, education, profession, date_registration, " +
                             "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
                             " @login, @pass, @snils);";
+                        //if (sender == "toolStripMenuItem8") sql
 
                         //string formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
 
@@ -409,6 +410,64 @@ namespace Employment_history
 
                         int rowsAffected = command.ExecuteNonQuery();
                         //if (rowsAffected > 0) { MessageBox.Show("Done!"); }
+                    }
+                }
+            }
+
+            row = null;
+            return;
+        }
+
+        private void UpdateDb(object sender, DataGridViewRow DataRow, string value, string column)
+        {
+            int id = Convert.ToInt32(DataRow.Cells["id"].Value);
+
+            if (row != null) return;
+            else
+            {
+                DateTime dateBirth = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+                DateTime dateReg = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+                DateTime dateValue = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
+
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
+                {
+                    connection.Open();
+                    if (row.Length > 5)
+                    {
+                        dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
+                        dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+
+                        string sqlEmp = "INSERT INTO empinfo (tk_number, name, date_birth, education, profession, date_registration, " +
+                            "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
+                            " @login, @pass, @snils);";
+
+                        using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
+                        {
+                            command.Parameters.AddWithValue("@tk_number", GetTkNumber(connection)); // function
+                            command.Parameters.AddWithValue("@name", row[3]);
+                            command.Parameters.AddWithValue("@date_birth", dateBirth);
+                            command.Parameters.AddWithValue("@education", row[5]);
+                            command.Parameters.AddWithValue("@profession", row[6]);
+                            command.Parameters.AddWithValue("@date_registration", dateReg);
+                            command.Parameters.AddWithValue("@login", row[8]);
+                            command.Parameters.AddWithValue("@pass", row[9]);
+                            command.Parameters.AddWithValue("@snils", formatSnils);
+
+                            int rowsAffected = command.ExecuteNonQuery();
+                        }
+
+                    }
+                    string sqlEntr = $"UPDATE entries set {column} = @value where id = @id;";
+
+                    if (sender == toolStripMenuItem5)
+                        sqlEntr = $"UPDATE awards set {column} = @value where id = @id;";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(sqlEntr, connection))
+                    {
+                        command.Parameters.AddWithValue($"@{column}", value);
+                        command.Parameters.AddWithValue("@id", id);
+
+                        int rowsAffected = command.ExecuteNonQuery();
                     }
                 }
             }
@@ -522,11 +581,7 @@ namespace Employment_history
                 form5.Owner = this;
                 form5.ShowDialog();
 
-                if (row == null) return;
-
                 InsertIntoDB(sender);
-
-                row = null;
             }
             else
             {
@@ -574,11 +629,7 @@ namespace Employment_history
                 form5.Owner = this;
                 form5.ShowDialog();
 
-                if (row == null) return;
-
                 InsertIntoDB(sender);
-
-                row = null;
             }
             else
             {
@@ -644,11 +695,7 @@ namespace Employment_history
                 form5.Owner = this;
                 form5.ShowDialog();
 
-                if (row == null) return;
-
                 InsertIntoDB(sender);
-
-                row = null;
             }
             else
             {
@@ -687,11 +734,7 @@ namespace Employment_history
                 form5.Owner = this;
                 form5.ShowDialog();
 
-                if (row == null) return;
-
                 InsertIntoDB(sender);
-
-                row = null;
             }
             else
             {
@@ -751,6 +794,62 @@ namespace Employment_history
             textBox1.SelectionStart = textBox1.Text.Length;
 
             formatSnils = Regex.Replace(textBox1.Text.Trim(), @"^\d+\s\d+\s\d+(?=\s\d)", m => m.Value.Replace(' ', '-'));
+        }
+
+        private void toolStripMenuItem8_Click(object sender, EventArgs e)
+        {
+            inactivityTimer.Stop();
+            WarningTimer.Stop();
+
+            logger.LogEvent(username, "MenuClick", "Обновление информации о сотруднике (доп.)");
+
+            if (!IsSnilsValid(formatSnils))
+            {
+                MessageBox.Show("СНИЛС сотрудника введен неверно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "InvalidSnils", "Введен неверный СНИЛС");
+                return;
+            }
+
+            if (!IsUserExist(formatSnils))
+            {
+                MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                logger.LogEvent(username, "EmployeeNotFound", "Сотрудник не найден");
+            }
+            else
+            {
+                dataGridView1.ReadOnly = false;
+                if (toolStripMenuItem8.Text == "Обновить данные о сотруднике") toolStripMenuItem8.Text = "Завершить редактирование";
+                else
+                {
+                    toolStripMenuItem8.Text = "Обновить данные о сотруднике";
+                    dataGridView1.ReadOnly = true;
+                }
+                //Form4 form4 = new Form4(username, logger);
+                //form4.Owner = this;
+                //form4.ShowDialog();                
+            }
+
+            inactivityTimer.Start();
+            WarningTimer.Start();
+        }
+
+        private void toolStripMenuItem9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            DataGridViewRow DataRow = dataGridView1.Rows[e.RowIndex];
+            string value = DataRow.Cells[e.ColumnIndex].Value.ToString();
+            string columnName = dataGridView1.Columns[e.ColumnIndex].Name;
+
+            UpdateDb(sender, DataRow, value, columnName);
+        }
+
+        private void dataG1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
 
         private void _FormClosing(object sender, FormClosingEventArgs e)
