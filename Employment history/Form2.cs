@@ -126,9 +126,9 @@ namespace Employment_history
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
 
             DataGridViewTextBoxColumn idColumn = new DataGridViewTextBoxColumn();
-            idColumn.Name = "id";
+            idColumn.Name = "_id";
             dataGridView1.Columns.Add(idColumn);
-            dataGridView1.Columns["id"].Visible = false;
+            dataGridView1.Columns["_id"].Visible = false;
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersVisible = false;
         }
@@ -152,7 +152,7 @@ namespace Employment_history
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (formatSnils == prevSnils || formatSnils == "") { return; }
+            if (formatSnils == "") { return; }
             else { prevSnils = formatSnils; }
 
             toolStripButton1.Enabled = false;
@@ -180,9 +180,9 @@ namespace Employment_history
                         MessageBox.Show("Сотрудника с таким СНИЛС не найдено", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return; 
                     }
-                    dataGridView1.Columns["id"].Visible = true;
+                    dataGridView1.Columns["_id"].Visible = true;
 
-                    string sqlEntries = $"SELECT date, entry, document FROM entries where id_emp = {empId};"; // запрос
+                    string sqlEntries = $"SELECT id, date, entry, document FROM entries where id_emp = {empId};"; // запрос
                     string sqlAwards = $"SELECT date, entry, document FROM awards where id_emp = {empId};";
                     string sqlEmpinfo = $"SELECT tk_number, name, date_birth, education, profession, date_registration" +
                         $" FROM empinfo where id = {empId};";
@@ -202,16 +202,17 @@ namespace Employment_history
 
                         dataGridView1.DataSource = dataTable;
 
-                        dataGridView1.Columns["id"].Width = 100;
+                        dataGridView1.Columns["id"].Visible = false;
+                        dataGridView1.Columns["_id"].Width = 100;
                         dataGridView1.Columns["date"].Width = 100;
-                        dataGridView1.Columns["id"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        dataGridView1.Columns["_id"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                         dataGridView1.Columns["date"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 
-                        dataGridView1.Columns["id"].Resizable = DataGridViewTriState.False;
+                        dataGridView1.Columns["_id"].Resizable = DataGridViewTriState.False;
                         dataGridView1.Columns["date"].Resizable = DataGridViewTriState.False;
 
 
-                        dataGridView1.Columns["id"].HeaderText = "№ записи";
+                        dataGridView1.Columns["_id"].HeaderText = "№ записи";
                         dataGridView1.Columns["date"].HeaderText = "Дата";
                         dataGridView1.Columns["entry"].HeaderText = "Сведения";
                         dataGridView1.Columns["document"].HeaderText = "Документ";
@@ -263,7 +264,7 @@ namespace Employment_history
         {
             for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
-                dataGridView1.Rows[i].Cells["id"].Value = (i + 1).ToString();
+                dataGridView1.Rows[i].Cells["_id"].Value = (i + 1).ToString();
             }
         }
 
@@ -418,45 +419,30 @@ namespace Employment_history
             return;
         }
 
-        private void UpdateDb(object sender, DataGridViewRow DataRow, string value, string column)
+        private void UpdateDb(object sender, int id, object value, string column)
         {
-            int id = Convert.ToInt32(DataRow.Cells["id"].Value);
-
-            if (row != null) return;
-            else
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
             {
-                DateTime dateBirth = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
-                DateTime dateReg = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
-                DateTime dateValue = DateTime.ParseExact(row[0], "dd.MM.yyyy", null);
-
-                using (NpgsqlConnection connection = new NpgsqlConnection(connectionStr))
+                connection.Open();
+                if (id <= 0) //Передаются значения из TextChanged
                 {
-                    connection.Open();
-                    if (row.Length > 5)
+                    //dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
+                    //dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+
+                    string sqlEmp = $"update empinfo set {column} = @value where id = @id";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
                     {
-                        dateBirth = DateTime.ParseExact(row[4], "dd.MM.yyyy", null);
-                        dateReg = DateTime.ParseExact(row[7], "dd.MM.yyyy", null);
+                        command.Parameters.AddWithValue("@value", value.ToString());
+                        if (id == -1) command.Parameters["@value"].Value = value;   // Передается дата из textChanged
+                        command.Parameters.AddWithValue("@id", GetEmployeeIdBySnils(connection, formatSnils));
 
-                        string sqlEmp = "INSERT INTO empinfo (tk_number, name, date_birth, education, profession, date_registration, " +
-                            "login, pass, snils) VALUES (@tk_number, @name, @date_birth, @education, @profession, @date_registration," +
-                            " @login, @pass, @snils);";
-
-                        using (NpgsqlCommand command = new NpgsqlCommand(sqlEmp, connection))
-                        {
-                            command.Parameters.AddWithValue("@tk_number", GetTkNumber(connection)); // function
-                            command.Parameters.AddWithValue("@name", row[3]);
-                            command.Parameters.AddWithValue("@date_birth", dateBirth);
-                            command.Parameters.AddWithValue("@education", row[5]);
-                            command.Parameters.AddWithValue("@profession", row[6]);
-                            command.Parameters.AddWithValue("@date_registration", dateReg);
-                            command.Parameters.AddWithValue("@login", row[8]);
-                            command.Parameters.AddWithValue("@pass", row[9]);
-                            command.Parameters.AddWithValue("@snils", formatSnils);
-
-                            int rowsAffected = command.ExecuteNonQuery();
-                        }
-
+                        int rowsAffected = command.ExecuteNonQuery();
                     }
+
+                }
+                else
+                {
                     string sqlEntr = $"UPDATE entries set {column} = @value where id = @id;";
 
                     if (sender == toolStripMenuItem5)
@@ -464,16 +450,13 @@ namespace Employment_history
 
                     using (NpgsqlCommand command = new NpgsqlCommand(sqlEntr, connection))
                     {
-                        command.Parameters.AddWithValue($"@{column}", value);
+                        command.Parameters.AddWithValue("@value", value);
                         command.Parameters.AddWithValue("@id", id);
 
                         int rowsAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-
-            row = null;
-            return;
         }
 
         private string GetTkNumber(NpgsqlConnection connection)
@@ -817,12 +800,33 @@ namespace Employment_history
             }
             else
             {
-                dataGridView1.ReadOnly = false;
-                if (toolStripMenuItem8.Text == "Обновить данные о сотруднике") toolStripMenuItem8.Text = "Завершить редактирование";
+                
+                if (toolStripMenuItem8.Text == "Обновить данные о сотруднике")
+                {
+                    toolStripMenuItem8.Text = "Завершить редактирование";
+                    dataGridView1.ReadOnly = false;
+                    dataGridView1.Columns["_id"].ReadOnly = true;
+
+                    textBox2.ReadOnly = false;
+                    textBox3.ReadOnly = false;
+                    textBox4.ReadOnly = false;
+                    textBox5.ReadOnly = false;
+                    textBox6.ReadOnly = false;
+                    textBox7.ReadOnly = false;
+                    textBox9.ReadOnly = false;
+                }
                 else
                 {
                     toolStripMenuItem8.Text = "Обновить данные о сотруднике";
                     dataGridView1.ReadOnly = true;
+
+                    textBox2.ReadOnly = true;
+                    textBox3.ReadOnly = true;
+                    textBox4.ReadOnly = true;
+                    textBox5.ReadOnly = true;
+                    textBox6.ReadOnly = true;
+                    textBox7.ReadOnly = true;
+                    textBox9.ReadOnly = true;
                 }
                 //Form4 form4 = new Form4(username, logger);
                 //form4.Owner = this;
@@ -841,15 +845,74 @@ namespace Employment_history
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             DataGridViewRow DataRow = dataGridView1.Rows[e.RowIndex];
+
             string value = DataRow.Cells[e.ColumnIndex].Value.ToString();
             string columnName = dataGridView1.Columns[e.ColumnIndex].Name;
+            int id = Convert.ToInt32(DataRow.Cells["id"].Value);
 
-            UpdateDb(sender, DataRow, value, columnName);
+            UpdateDb(sender, id, value, columnName);
         }
 
-        private void dataG1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private void textBox2_Leave(object sender, EventArgs e)
         {
+            if (sender.ToString() != "button1")
+                UpdateDb(sender, 0, $"{textBox2.Text} {textBox3.Text} {textBox4.Text}", "name");
+        }
 
+        private void textBox3_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() != "button1")
+                UpdateDb(sender, 0, $"{textBox2.Text} {textBox3.Text} {textBox4.Text}", "name");
+        }
+
+        private void textBox4_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() != "button1")
+                UpdateDb(sender, 0, $"{textBox2.Text} {textBox3.Text} {textBox4.Text}", "name");
+        }
+
+        private void textBox5_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() == "button1") return;
+
+            try
+            {
+                DateTime dateBirth = DateTime.ParseExact(textBox5.Text, "dd.MM.yyyy", null);
+
+                UpdateDb(sender, -1, textBox5.Text, "date_birth");
+            }
+            catch
+            {
+                MessageBox.Show("Формат даты рождения введен не верно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void textBox6_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() != "button1")
+                UpdateDb(sender, 0, textBox6.Text, "education");
+        }
+
+        private void textBox7_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() != "button1")
+                UpdateDb(sender, 0, textBox7.Text, "profession");
+        }
+
+        private void textBox9_Leave(object sender, EventArgs e)
+        {
+            if (sender.ToString() == "button1") return;
+
+            try
+            {
+                DateTime dateBirth = DateTime.ParseExact(textBox9.Text, "dd.MM.yyyy", null);
+
+                UpdateDb(sender, -1, textBox9.Text, "date_registration");
+            }
+            catch
+            {
+                MessageBox.Show("Формат даты рождения введен не верно", "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void _FormClosing(object sender, FormClosingEventArgs e)

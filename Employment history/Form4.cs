@@ -223,7 +223,6 @@ namespace Employment_history
                 connection.Open();
                 bool isFindL = false;
                 bool isFindP = false;
-                bool isFindS = false;
                 string sql = "SELECT login, pass, snils FROM empinfo;";
 
                 using (NpgsqlCommand cmd = new NpgsqlCommand(sql, connection))

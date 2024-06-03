@@ -129,12 +129,12 @@ namespace Employment_history
                 return;
             }
 
-            //if (textBox1.Text == "")
-            //{
-            //    textBox1.Text = "user1";
-            //    textBox2.Text = "pass1";
-            //    textBox3.Text = "123-456-789 01";
-            //}
+            if (textBox1.Text == "")
+            {
+                textBox1.Text = "user1";
+                textBox2.Text = "pass1";
+                textBox3.Text = "123-456-789 01";
+            }
 
             string username = textBox1.Text.Trim();
             string password = textBox2.Text.Trim();
@@ -174,9 +174,9 @@ namespace Employment_history
                 UserLocked();
                 return;
             }
-
-            //textBox1.Text = "admin1";
-            //textBox2.Text = "password1";
+            
+            textBox1.Text = "admin1";
+            textBox2.Text = "password1";
 
             string username = textBox1.Text;
             string password = textBox2.Text;
@@ -345,8 +345,6 @@ namespace Employment_history
             Application.Exit();
 
         }
-
-
 
 
 
